@@ -640,6 +640,9 @@ button.wday:active{background:var(--accent-soft)}
 .sq-rep::-webkit-scrollbar{display:none}
 .sq-rep button{flex:none;border:0;border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;background:var(--choco);color:var(--bg)}
 .sliste .fedit{box-shadow:none;padding:4px 0 10px;border-bottom:1px solid var(--line);border-radius:0}
+.rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
+.rondnote svg{width:20px;height:20px}
+.rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
 .sajout{border:1.5px dashed #CDBBA2;background:none;border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;color:var(--b2);text-align:left;width:100%}
 .instabtn.patte{background:var(--choco);color:var(--bg)}
 .instabtn.patte svg{width:24px;height:24px}
@@ -1622,9 +1625,9 @@ const allergiesListe=v=>String(v||"").split(/\s*·\s*|\s*,\s*/).map(x=>x.trim())
 function openClient(c){
   const isNew=!c; c=c?{...c}:{prenom:"",nom:"",tel:"",insta:"",statut:"nouvelle",notes:"",allergies:""};
   openSheet(`
-    <div class="sheet-h"><h3>${isNew?"Nouvelle cliente":"Modifier la fiche"}</h3></div>
+    <div class="sheet-h"><h3>${isNew?"Nouvelle cliente":"Modifier la fiche"}</h3><button type="button" class="rondnote" id="cRond" aria-label="Ses notes" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3.5" width="14" height="17" rx="3"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></button></div>
     <form class="f" id="fCli">
-      <div class="seg fseg" style="margin-bottom:0"><button type="button" class="on">Fiche</button><button type="button" id="cVersNotes">Notes</button></div>
+      <div id="cChamps" style="display:contents">
       <div class="two"><div class="fld"><label for="cPrenom">Prénom</label><input id="cPrenom" value="${esc(c.prenom)}" required autocomplete="off"></div>
       <div class="fld"><label for="cNom">Nom</label><input id="cNom" value="${esc(c.nom)}" autocomplete="off"></div></div>
       <div class="two"><div class="fld"><label for="cTel">Téléphone</label><input id="cTel" type="tel" value="${esc(c.tel)}" autocomplete="off"></div>
@@ -1635,14 +1638,17 @@ function openClient(c){
       ${(()=>{const mes=allergiesListe(c.allergies),autres=mes.filter(t=>!ALLERGIES.includes(t));
         return `<div class="fld"><label for="cAllAutre">À savoir sur elle</label><div class="fsugg allpick une" id="allPick">${[...ALLERGIES,...autres].map(t=>`<button type="button" class="${mes.includes(t)?"on":""}" data-al="${esc(t)}">${esc(t)}</button>`).join("")}</div>
         <input id="cAllAutre" placeholder="Autre (facultatif)" autocomplete="off"></div>`})()}
+      </div>
+      <div id="cNotesBox" hidden><div id="etiq"></div></div>
       <button class="btn" type="submit">${isNew?"Créer la fiche":"Enregistrer"}</button>
       ${isNew?"":`<button class="btn danger" type="button" id="btnDelC">Supprimer la cliente</button><div id="delC"></div>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
     sheet.querySelectorAll("#allPick button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
-    // « Notes » : on enregistre la fiche puis on ouvre ses notes pour tout y mettre
-    let versNotes=false;
-    $("#cVersNotes").onclick=()=>{if(!$("#cPrenom").value.trim()){toast("Écris d'abord son prénom");$("#cPrenom").focus();return}versNotes=true;$("#fCli").requestSubmit()};
+    // le petit rond : ses notes à la place des champs (et retour), enregistrées avec la fiche
+    let notesMontees=false;
+    $("#cRond").onclick=()=>{const v=$("#cNotesBox").hidden;$("#cNotesBox").hidden=!v;$("#cChamps").hidden=v;$("#cRond").classList.toggle("on",v);$("#cRond").setAttribute("aria-pressed",v);
+      if(v&&!notesMontees){notesMontees=true;montEtiq(sheet,c.id||"",c)}};
     if(!isNew)$("#btnDelC").onclick=()=>{$("#delC").innerHTML=`<div class="confirm"><b>Supprimer ${esc(nomC(c))} ?</b><span style="font-size:13px">Ses rendez-vous resteront dans l'agenda sous « Cliente supprimée ».</span><div class="actions"><button type="button" class="btn ghost" id="no">Non</button><button type="button" class="btn" style="background:var(--bad)" id="yes">Supprimer</button></div></div>`;
       $("#no").onclick=()=>{$("#delC").innerHTML=""};$("#yes").onclick=async()=>{if(await write(()=>S.db.doc("clientes/"+c.id).delete(),"Fiche supprimée"))closeSheet()}};
     $("#fCli").onsubmit=async e=>{e.preventDefault();
@@ -1650,7 +1656,7 @@ function openClient(c){
         allergies:[...[...sheet.querySelectorAll("#allPick button.on")].map(b=>b.dataset.al),$("#cAllAutre").value.trim()].filter(Boolean).join(" · "),notes:c.notes||"",anniv:($("#cAnJ").value&&$("#cAnM").value)?$("#cAnM").value+"-"+$("#cAnJ").value:"",annee:Number($("#cAnA").value)||null,annivEnvoye:c.annivEnvoye||null,etiquettes:c.etiquettes||[],aPenser:c.aPenser||[],parrain:c.parrain||"",parlerDe:c.parlerDe||"",reponses:c.reponses||{},creeLe:c.creeLe||iso(new Date())};
       if(c.exemple)body.exemple=true;
       const ref=isNew?S.db?.collection("clientes").doc():S.db?.doc("clientes/"+c.id);
-      if(await write(()=>ref.set(body),isNew?"Cliente ajoutée":"Fiche enregistrée")){closeSheet();const nid=isNew?ref.id:c.id;if(!S.clients.has(nid))S.clients.set(nid,{id:nid,...body});if(versNotes)openFiche(nid,"notes");else if(!isNew)openFiche(nid)}};
+      if(await write(()=>ref.set(body),isNew?"Cliente ajoutée":"Fiche enregistrée")){closeSheet();const nid=isNew?ref.id:c.id;if(!S.clients.has(nid))S.clients.set(nid,{id:nid,...body});if(!isNew)openFiche(nid)}};
   });
 }
 
@@ -1830,9 +1836,10 @@ const ETQ_Q=[
   {k:"voyage",q:"Elle part bientôt en voyage ?",r:[["Oui","Voyage bientôt",1],["Non",""]],t:["Voyage bientôt"]},
   {k:"vacances",q:"Elle est partie en vacances ?",r:[["Oui","Partie en vacances",1],["Non",""]],t:["Partie en vacances"]}];
 const ETQ_PH={"Partie en vacances":"Où ? (facultatif)","Commerçante":"Quel commerce ? (facultatif)","En couple":"Son prénom (facultatif)","Enfants":"Leurs prénoms (facultatif)","Chien":"Son nom (facultatif)","Chat":"Son nom (facultatif)","Étudiante":"En quoi ? (facultatif)","Sportive":"Quel sport ? (facultatif)","Voyage bientôt":"Où ? (facultatif)"};
-function montEtiq(sh,id){const box=sh.querySelector("#etiq");if(!box)return;let ed=-1,dec=0,anim=false,autre=false,plus=false,fixe="",ouv=-1,edNon="";
-  const c=()=>S.clients.get(id),liste=()=>[...(c()?.etiquettes||[])];
-  const sauver=l=>{const x=c();if(x)x.etiquettes=l;write(()=>S.db.doc("clientes/"+id).update({etiquettes:l}))};
+function montEtiq(sh,id,loc){const box=sh.querySelector("#etiq");if(!box)return;let ed=-1,dec=0,anim=false,autre=false,plus=false,fixe="",ouv=-1,edNon="";
+  const c=()=>loc||S.clients.get(id),liste=()=>[...(c()?.etiquettes||[])];
+  const ecrire=o=>{if(!loc)write(()=>S.db.doc("clientes/"+id).update(o))};
+  const sauver=l=>{const x=c();if(x)x.etiquettes=l;ecrire({etiquettes:l})};
   // les idées qui suivent la dernière étiquette, puis les autres par paquets de 8
   function idees(l){const pris=new Set(l.map(e=>e.t)),der=l[l.length-1],suite=(der&&ETQ_SUITE[der.t]||[]).filter(t=>!pris.has(t));
     const reste=ETQ.filter(t=>!pris.has(t)&&!suite.includes(t)),n=reste.length,lot=[];
@@ -1851,29 +1858,29 @@ function montEtiq(sh,id){const box=sh.querySelector("#etiq");if(!box)return;let 
   function dessine(){const l=liste(),ord=aParler(l),{suite,lot,n}=idees(l),cur=ord.find(x=>x.t===(c()?.parlerDe||fixe))||ord[0];fixe=cur?.t||"";
     const rep=repondues(),nons=Object.keys(rep).filter(k=>rep[k]==="non"&&ETQ_NON[k]),M=manques(l);
     const edit=e=>`<div class="fedit"><input class="bnote" id="etD" value="${esc(e.d||"")}" placeholder="${esc(ETQ_PH[e.t]||"Détail facultatif (prénom…)")}" autocomplete="off"><span><button type="button" class="btn" id="etOk" style="width:auto;min-height:40px;padding:8px 16px">OK</button><button type="button" class="link" id="etDel" style="margin-left:12px">Retirer</button></span></div>`;
-    box.innerHTML=`${cur?`<button type="button" class="fbulle ${anim?"pop":""}" data-etk><small>De quoi lui parler</small><p>${esc(etqPhrase(cur))}</p>${ord.length>1?`<span class="fautre">Touche pour une autre idée</span>`:""}</button>`:""}
+    box.innerHTML=`${cur&&!loc?`<button type="button" class="fbulle ${anim?"pop":""}" data-etk><small>De quoi lui parler</small><p>${esc(etqPhrase(cur))}</p>${ord.length>1?`<span class="fautre">Touche pour une autre idée</span>`:""}</button>`:""}
       <div class="label" style="margin:2px 0 -2px">Ce que je sais</div>
       ${l.length||nons.length?`<div class="sliste">${l.map((e,i)=>`<button type="button" class="sli ${i===ed?"sel":""}" data-et="${i}"><i>${ETQ_ICO(e.t+" "+(e.d||""))}</i><span>${esc(etqDit(e))}</span></button>${i===ed?edit(e):""}`).join("")}${nons.map(k=>`<button type="button" class="sli ${k===edNon?"sel":""}" data-non="${k}"><i>${ETQ_ICO(ETQ_NON[k])}</i><span>${esc(ETQ_NON[k])}</span></button>${k===edNon?`<div class="fedit"><span><button type="button" class="link" data-nonx="${k}">Retirer</button></span></div>`:""}`).join("")}</div>`
         :`<div class="doux" style="margin:0">Rien de noté pour l'instant.</div>`}
       ${M.length?`<div class="label" style="margin:6px 0 -2px">Pas encore</div><div class="sliste">${M.map((m,j)=>`<div class="sli q"><i>?</i><span>${esc(m.txt)}</span>${ouv===j?"":`<button type="button" class="jsais" data-ms="${j}">Je sais</button>`}</div>${ouv===j&&m.q?`<div class="sq-rep">${m.q.r.map(([lab],i)=>`<button type="button" data-qr="${i}">${esc(lab)}</button>`).join("")}</div>`:""}`).join("")}</div>`:""}
-      ${plus?`${suite.length?`<div class="fsugg fsuite">${suite.map(t=>`<button type="button" data-etadd="${esc(t)}">${esc(t)} ?</button>`).join("")}</div>`:""}
-      <div class="fsugg">${lot.map(t=>`<button type="button" data-etadd="${esc(t)}">+ ${esc(t)}</button>`).join("")}${n>8?`<button type="button" class="fplus" data-etmore>Autres idées</button>`:""}<button type="button" class="fplus" data-etautre>+ Autre…</button></div>
+      ${plus?`${suite.length?`<div class="fsugg fsuite une">${suite.map(t=>`<button type="button" data-etadd="${esc(t)}">${esc(t)} ?</button>`).join("")}</div>`:""}
+      <div class="fsugg une">${lot.map(t=>`<button type="button" data-etadd="${esc(t)}">+ ${esc(t)}</button>`).join("")}${n>8?`<button type="button" class="fplus" data-etmore>Autres idées</button>`:""}<button type="button" class="fplus" data-etautre>+ Autre…</button></div>
       ${autre?`<div class="fedit"><input class="bnote" id="etA" placeholder="Ex. : son copain a une petite fille" autocomplete="off"><span><button type="button" class="btn" id="etAOk" style="width:auto;min-height:40px;padding:8px 16px">Ajouter</button></span></div>`:""}`
       :`<button type="button" class="sajout" data-eplus>+ Autre chose que je sais</button>`}`;
     box.querySelector("[data-eplus]")?.addEventListener("click",()=>{plus=true;dessine()});
     box.querySelectorAll("[data-etadd]").forEach(b=>b.onclick=()=>ajouter(b.dataset.etadd));
     box.querySelector("[data-etmore]")?.addEventListener("click",()=>{dec+=8;dessine()});
     box.querySelector("[data-etk]")?.addEventListener("click",()=>{if(ord.length<2)return;const nx=ord[(ord.indexOf(cur)+1)%ord.length],x=c();if(x)x.parlerDe=nx.t;
-      write(()=>S.db.doc("clientes/"+id).update({parlerDe:nx.t}));anim=true;dessine();anim=false});
+      ecrire({parlerDe:nx.t});anim=true;dessine();anim=false});
     box.querySelector("[data-etautre]")?.addEventListener("click",()=>{autre=!autre;dessine();box.querySelector("#etA")?.focus()});
     const aok=box.querySelector("#etAOk");if(aok){aok.onclick=()=>ajouter(box.querySelector("#etA").value);box.querySelector("#etA").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();aok.click()}}}
     // « Je sais » : le prénom qui manque s'écrit sous sa ligne ; une question montre ses réponses (« Non » est retenu dans ce que je sais)
     box.querySelectorAll("[data-ms]").forEach(b=>b.onclick=()=>{const m=M[+b.dataset.ms];if(m.q){ouv=+b.dataset.ms;dessine()}else{ed=m.i;ouv=-1;dessine();box.querySelector("#etD")?.focus()}});
     box.querySelectorAll("[data-qr]").forEach(b=>b.onclick=()=>{const q=M[ouv].q,[,t,dt]=q.r[+b.dataset.qr];ouv=-1;
-      if(t)ajouter(t,!!dt);else{const x=c(),rp={...repondues(),[q.k]:"non"};if(x)x.reponses=rp;write(()=>S.db.doc("clientes/"+id).update({reponses:rp}));dessine()}});
+      if(t)ajouter(t,!!dt);else{const x=c(),rp={...repondues(),[q.k]:"non"};if(x)x.reponses=rp;ecrire({reponses:rp});dessine()}});
     box.querySelectorAll("[data-non]").forEach(b=>b.onclick=()=>{edNon=edNon===b.dataset.non?"":b.dataset.non;dessine()});
     box.querySelector("[data-nonx]")?.addEventListener("click",e=>{const k=e.currentTarget.dataset.nonx,x=c(),rp={...repondues()};delete rp[k];if(x)x.reponses=rp;edNon="";
-      write(()=>S.db.doc("clientes/"+id).update({reponses:rp}));dessine()});
+      ecrire({reponses:rp});dessine()});
     box.querySelectorAll("[data-et]").forEach(b=>b.onclick=()=>{const i=+b.dataset.et;ed=ed===i?-1:i;dessine();box.querySelector("#etD")?.focus()});
     const ok=box.querySelector("#etOk");if(ok)ok.onclick=()=>{const l=liste();l[ed]={...l[ed],d:box.querySelector("#etD").value.trim()};ed=-1;sauver(l);dessine()};
     const del=box.querySelector("#etDel");if(del)del.onclick=()=>{const l=liste();l.splice(ed,1);ed=-1;sauver(l);dessine()};
