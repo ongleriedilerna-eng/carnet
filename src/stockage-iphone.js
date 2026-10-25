@@ -105,7 +105,7 @@ window.__carnetSauvegarde = {
   },
 };
 
-// Le rappel : une ligne sous l'en-tête quand il y a des clientes et pas de copie depuis 7 jours
+// Le rappel : une ligne en haut du Bilan quand il y a des clientes et pas de copie depuis 7 jours
 const barre = document.createElement("button");
 barre.type = "button"; barre.className = "rappel-svg"; barre.hidden = true;
 barre.onclick = () => window.__carnetSauvegarde.exporter();
@@ -114,6 +114,7 @@ document.head.insertAdjacentHTML("beforeend", `<style>
   background:var(--surface);color:var(--muted);font:inherit;font-size:13px;text-align:left;cursor:pointer}
 .rappel-svg span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rappel-svg b{color:var(--accent);font-weight:700;white-space:nowrap}
+html:not([data-tab="bilan"]) .rappel-svg{display:none!important}
 </style>`);
 document.getElementById("view")?.before(barre);
 function rappel() {

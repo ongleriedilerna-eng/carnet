@@ -207,7 +207,7 @@ form.f{display:flex;flex-direction:column;gap:12px}
 .catrow{display:grid;grid-template-columns:1fr 70px 70px 32px;gap:6px;align-items:center}
 .catrow input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 8px;font-size:15px;width:100%;min-width:0}
 .catrow .x{border:0;background:none;color:var(--bad);font-size:20px}
-@media (max-width:380px){.three{grid-template-columns:1fr 1fr}.three .fld:first-child{grid-column:1/-1}}
+@media (max-width:330px){.three{grid-template-columns:1fr 1fr}.three .fld:first-child{grid-column:1/-1}}
 /* Agenda : la semaine, comme le semainier papier (créneaux de 30 min) */
 .wkhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px}
 .mlabel{position:relative;text-align:center;flex:1;min-width:0}
@@ -655,7 +655,7 @@ button.wday:active{background:var(--accent-soft)}
 .sq-rep button{flex:none;border:0;border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;background:var(--choco);color:var(--bg)}
 .sliste .fedit{box-shadow:none;padding:4px 0 10px;border-bottom:1px solid var(--line);border-radius:0}
 /* Abonnée : la couronne posée de côté sur son prénom */
-.ctilt{display:inline-block;width:.78em;height:.55em;color:#B8925A;transform:translate(-1px,-.5em) rotate(24deg);margin-right:1px;font-style:normal;vertical-align:baseline}
+.ctilt{display:inline-block;width:.8em;height:.56em;color:#A98466;transform:translate(1px,-.32em) rotate(20deg);margin-left:3px;font-style:normal;vertical-align:baseline}
 .ctilt svg{display:block;width:100%;height:100%}
 /* Notes de la création de fiche (C2) */
 .c2{background:var(--surface);border-radius:16px;padding:2px 12px;box-shadow:var(--shadow)}
@@ -667,10 +667,27 @@ button.wday:active{background:var(--accent-soft)}
 .c2s{flex:none;display:flex;background:var(--bg-alt);border-radius:999px;padding:2px}
 .c2s button{border:0;background:none;font-size:12px;font-weight:800;color:var(--b2);padding:5px 9px;border-radius:999px;white-space:nowrap}
 .c2s button.on{background:var(--choco);color:var(--bg)}
+.c2l:has(+.c2d){border-bottom:0;padding-bottom:4px}
 .c2d{padding:0 0 9px 33px;border-bottom:1px solid var(--line)}
 .c2d input,.c2l .c2t{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 10px;font-size:16px;color:var(--ink)}
 .c2d input{width:100%}
 .c2l .c2t{flex:none;width:48%;border-radius:999px;padding:6px 12px}
+/* V2 : jours passés en gris, message Instagram, rendez-vous fini, durée de la prestation */
+.wday.passe{opacity:.4}
+.wcol.passee{background-color:color-mix(in srgb,var(--line) 40%,transparent)}
+.passetag{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;color:var(--bg);background:var(--b2);border-radius:999px;padding:2px 8px;vertical-align:2px}
+.histh{display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px}
+.igmsg{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--choco);color:var(--bg);font-size:12.5px;font-weight:800;padding:6px 12px;text-decoration:none}
+.igmsg svg{width:15px;height:15px}
+.bdur{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:-4px}
+.bdur::-webkit-scrollbar{display:none}
+.bdur button{flex:none;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--choco)}
+.bdur button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
+.btn.fini{background:var(--choco);box-shadow:0 8px 20px -12px rgba(78,46,34,.9)}
+.total{cursor:pointer}
+.total .modif{display:block;font-size:11px;opacity:.75;margin-top:2px}
+.total input{width:110px;border:0;border-radius:10px;padding:6px 8px;font:700 22px/1 var(--body);color:var(--choco);background:var(--bg)}
+a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800;color:var(--choco);text-decoration:none;white-space:nowrap}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -705,7 +722,7 @@ button.wday:active{background:var(--accent-soft)}
 .ctag.anntag{display:inline-flex;align-items:center;gap:4px;background:none;box-shadow:inset 0 0 0 1px var(--line);color:var(--b2);font-weight:600}
 .ctag.anntag .gateau{width:13px;height:13px}
 .fnomrow{display:flex;align-items:center;gap:8px;min-width:0}
-.fnomrow .fnom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fnomrow .fnom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:.3em}
 .ftop-btns{margin-left:auto;flex:none;display:flex;gap:8px;align-self:flex-start}
 .ftop-btns .instabtn{margin-left:0}
 .instabtn.goutte{border:0;padding:0;position:relative}
@@ -1018,7 +1035,7 @@ const DEFAULT_CATALOGUE = {
 const S = {
   db:null, ready:false,
   clients:new Map(), rdvs:[], catalogue:DEFAULT_CATALOGUE, stock:[], depenses:[], attente:[], cartes:[],
-  tab:"agenda", half:new Date().getHours()>=13?1:0, day:iso(new Date()), weekStart:null, cal:iso(new Date()).slice(0,7),
+  tab:"agenda", half:new Date().getHours()>=13?1:0, day:jourDepart(), weekStart:null, cal:iso(new Date()).slice(0,7),
   jour:{taches:[],objectifs:[]}, jourPath:null, jourUnsub:null, bilan:false,
   q:"", filtre:"tous", tri:"az", month:iso(new Date()).slice(0,7)
 };
@@ -1031,6 +1048,8 @@ try{const t=localStorage.getItem("carnet-tri");if(TRIS.some(([k])=>k===t))S.tri=
 /* ---------- utils ---------- */
 function pad(n){return String(n).padStart(2,"0")}
 function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+// À l'ouverture : la page du lundi au vendredi ; le samedi et le dimanche, celle de la semaine qui arrive
+function jourDepart(){const d=new Date(),j=d.getDay();if(j===6)d.setDate(d.getDate()+2);else if(j===0)d.setDate(d.getDate()+1);return iso(d)}
 function parse(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
 function mondayOf(s){const d=parse(s);const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return iso(d)}
@@ -1057,11 +1076,11 @@ const CTILT=`<i class="ctilt" aria-label="Club Dilerna">${COURONNE}</i>`; // pos
 // le prénom en plus doux, le nom de famille bien foncé ; un petit cœur pour les fidèles
 function nomHTML(c){if(!c)return "Cliente supprimée";const p=(c.prenom||"").trim(),n=(c.nom||"").trim().replace(/^\(.*\)$/,"");
   const cr=isAbo(c)?CTILT:"";
-  return (p?`<span class="${n?"pn":"nn"}">${esc(p)}</span>${cr}`:"")+(p&&n?" ":"")+(n?`<span class="nn">${esc(n)}</span>${p?"":cr}`:"")+(p||n?"":"Sans nom")}
+  return (p?`<span class="${n?"pn":"nn"}">${esc(p)}</span>`:"")+(p&&n?" ":"")+(n?`<span class="nn">${esc(n)}</span>`:"")+(p||n?cr:"Sans nom")}
 const avClub=c=>""; // la couronne est maintenant sur son prénom (nomHTML)
 function avNew(c){return niveau(c)==="nouvelle"?" estnew":""}
 function coeur(c){return ""}
-function totalRdv(r){return (r.prestation?.prix||0)+(r.options||[]).filter(o=>!o.offert).reduce((a,o)=>a+(o.prix||0),0)}
+function totalRdv(r){if(r.total!=null&&r.total!=="")return Number(r.total)||0;return (r.prestation?.prix||0)+(r.options||[]).filter(o=>!o.offert).reduce((a,o)=>a+(o.prix||0),0)}
 function offertRdv(r){return (r.options||[]).filter(o=>o.offert).reduce((a,o)=>a+(o.prix||0),0)}
 function extrasRdv(r){return (r.options||[]).filter(o=>!o.offert).reduce((a,o)=>a+(o.prix||0),0)}
 function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
@@ -1099,7 +1118,7 @@ function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===S.tab||(b.dataset.tab==="agenda"&&S.tab==="jour")));
   const ad=document.getElementById("btnAdd");if(ad)ad.setAttribute("aria-label",S.tab==="clientes"?"Nouvelle cliente":"Nouveau rendez-vous");
   // l'agenda tient sur l'écran : rien ne bouge en haut et en bas
-  document.documentElement.classList.toggle("fige",S.tab==="agenda");
+  document.documentElement.classList.toggle("fige",S.tab==="agenda");document.documentElement.dataset.tab=S.tab;
   majCloche();
   if(S.tab==="agenda") V.innerHTML=renderSemaine();
   else if(S.tab==="jour"){subJour(S.day);V.innerHTML=renderJour()}
@@ -1161,7 +1180,7 @@ function renderSemaine(){
   h+=`<div class="wgrid" style="grid-template-columns:28px repeat(${IDX.length},minmax(0,1fr))"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
   for(let p=-PAGES;p<=PAGES;p++){const g=moi+p,w0=addDays(ws,Math.floor(g/2)*7),ix=((g%2)+2)%2?[5,6]:[0,1,2,3,4];h+=`<div class="dweek" style="grid-template-columns:repeat(${ix.length},minmax(0,1fr))">`;
   for(const i of ix){const d=addDays(w0,i),n=actifsDe(d).length;
-    h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":""}</span></button>`}
+    h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""} ${d<today?"passe":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":""}</span></button>`}
   h+=`</div>`}
   h+=`</div></div>`;
   const JW=jourInfo(addDays(ws,1));
@@ -1170,7 +1189,7 @@ function renderSemaine(){
   h+=`</div>`;
   for(const i of IDX){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
-    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
+    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
     for(let k=0;k<N;k++){const m=A+k*30,hm=hhmm(m);
       h+=`<button class="wcell ${k%2?"h":""} ${d===today&&ici(m)?"maintenant":""} ${!J.ferme&&J.pDe!=null&&m>=J.pDe&&m<J.pA?"lunch":""} ${!J.ferme&&(m<J.de||m>=J.a)?"hors":""}" style="top:${k*SLOT}px;height:${SLOT}px" data-act="cell" data-d="${d}" data-m="${m}" aria-label="${fDay.format(parse(d))} à ${hm.replace(":","h")}"></button>`}
     const ls=Math.max(J.pDe??0,A),le=Math.min(J.pA??0,B);if(!J.ferme&&le>ls)h+=`<div class="lunchtag" style="top:${(ls-A)/30*SLOT+(le-ls)/60*SLOT-6}px">pause</div>`;
@@ -1544,18 +1563,19 @@ function openRdv(r, preset={}){
       <div class="three">
         <div class="fld"><label for="rDate">Date</label><input id="rDate" type="date" value="${r.date}" required></div>
         <div class="fld"><label for="rHeure">Heure</label><input id="rHeure" type="time" step="900" value="${r.heure}" required></div>
-        <div class="fld"><label for="rDuree">Durée (min)</label><input id="rDuree" type="number" inputmode="numeric" min="15" step="15" value="${r.duree}"></div>
+        <div class="fld"><label for="rDuree">Durée</label><input id="rDuree" type="number" inputmode="numeric" min="15" step="15" value="${r.duree}"></div>
       </div>
-      <div class="quick" id="quick" aria-label="Raccourcis de date">${[["Aujourd'hui",0],["+1 sem",7],["+2 sem",14],["+3 sem",21],["+4 sem",28],["+6 sem",42]].map(([l,n])=>`<button type="button" data-plus="${n}">${l}</button>`).join("")}</div>
+      <div class="quick" id="quick" aria-label="Raccourcis de date">${[["+1 sem",7],["+2 sem",14],["+3 sem",21],["+4 sem",28],["+6 sem",42]].map(([l,n])=>`<button type="button" data-plus="${n}">${l}</button>`).join("")}</div>
       <div class="dhint" id="dHint"></div>
       <div class="fld"><label for="rPrest">Prestation</label><select id="rPrest"><option value="">Choisir…</option>${prestOpts}</select></div>
       <div class="fld" hidden><label>Options</label><div class="opts" id="opts">${optsHtml}</div></div>
-      <div class="total"><span><small>Total annoncé à la cliente</small><b class="num" id="tot">0 €</b></span><span id="offTxt" style="font-size:13px;text-align:right"></span></div>
-      <div class="fld"><label for="rNote">Note pour ce rdv</label><textarea id="rNote" placeholder="Couleur choisie, inspi, forme…">${esc(r.note||"")}</textarea></div>
+      <div class="total" id="totBox" role="button" aria-label="Changer le montant"><span><small>Total annoncé à la cliente · touche pour changer</small><b class="num" id="tot">0 €</b><small class="modif" id="totModif" hidden>montant changé à la main</small></span><span id="offTxt" style="font-size:13px;text-align:right"></span></div>
+      <input type="hidden" id="rNote" value="${esc(r.note||"")}">
       ${isNew?"":`<div class="fld"><label>Statut</label><div class="seg" id="seg">
         ${[["prevu","Prévu","var(--choco)"],["fait","Fait","var(--ok)"],["lapin","Lapin","var(--bad)"],["annule","Annulé","var(--muted)"]].map(([k,l,c])=>`<button type="button" data-st="${k}" style="--c:${c}" class="${(r.statut||"prevu")===k?"on":""}">${l}</button>`).join("")}
       </div></div>
-      <div class="fld"><label>Encaisser</label><div class="paie" id="paie"></div></div>`}
+      `}
+      ${isNew?"":`<div id="paie"></div>`}
       <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
       <button class="btn ghost" type="button" id="btnMsg">Préparer le message de confirmation</button>
       <div id="msgBox" hidden></div>
@@ -1563,12 +1583,12 @@ function openRdv(r, preset={}){
       ${isNew?"":`<button class="btn danger" type="button" id="btnDel">Supprimer ce rendez-vous</button><div id="delBox"></div>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
-    const state={opts:allOpts.map(o=>{const cur=(r.options||[]).find(x=>x.nom===o.nom);return cur?{...cur,on:true}:{nom:o.nom,prix:o.prix,offert:false,on:false}}), statut:r.statut||"prevu"};
+    const state={total:r.total??null,opts:allOpts.map(o=>{const cur=(r.options||[]).find(x=>x.nom===o.nom);return cur?{...cur,on:true}:{nom:o.nom,prix:o.prix,offert:false,on:false}}), statut:r.statut||"prevu"};
     function prest(){const v=$("#rPrest").value;if(v==="keep")return r.prestation;if(v==="")return null;const p=cat.prestations[+v];return {nom:p.nom,prix:p.prix}}
     function build(){return {...r,clientId:$("#rClient").value,date:$("#rDate").value,heure:$("#rHeure").value,duree:Number($("#rDuree").value)||60,
-      prestation:prest(),options:state.opts.filter(o=>o.on).map(({nom,prix,offert})=>({nom,prix,offert:!!offert})),statut:state.statut,note:$("#rNote").value.trim()}}
+      prestation:prest(),options:state.opts.filter(o=>o.on).map(({nom,prix,offert})=>({nom,prix,offert:!!offert})),statut:state.statut,note:$("#rNote").value.trim(),total:state.total}}
     function upd(){const b=build();
-      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
+      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;if(!r.paye&&$("#btnFini"))$("#btnFini").textContent=`✓ Rendez-vous fini · ${eur(totalRdv(b))} en espèces`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
     const norm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     function lastOf(id){const t=iso(new Date());const l=S.rdvs.filter(x=>x.clientId===id&&x.id!==r.id&&x.statut!=="annule"&&x.prestation).sort((a,b)=>(b.date+b.heure).localeCompare(a.date+a.heure));return l.find(x=>x.date<=t)||l[0]}
     function applyLast(l){
@@ -1611,23 +1631,28 @@ function openRdv(r, preset={}){
       openRdv(null,{clientId:r.clientId,date:addDays(r.date,21),heure:r.heure,duree:r.duree,prestation:r.prestation,options:opts})};
     sheet.querySelectorAll("#seg button").forEach(b=>b.onclick=()=>{state.statut=b.dataset.st;sheet.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b))});
     // Encaisser : un geste par moyen de paiement ; le rdv passe en « Fait » et le montant est gardé pour le Bilan
+    // « Rendez-vous fini » : un seul geste, encaissé en espèces, le rdv passe en « Fait » et le montant va dans le Bilan
     function dessinePaie(){const p=$("#paie");if(!p)return;
-      p.innerHTML=r.paye?`<span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button>`
-        :["Espèces","Carte","Virement"].map(m=>`<button type="button" data-mode="${m}">${m}</button>`).join("");
-      p.querySelectorAll("[data-mode]").forEach(b=>b.onclick=async()=>{const montant=totalRdv(build()),paye={mode:b.dataset.mode,montant,le:iso(new Date())};
-        if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait"}),`Encaissé · ${b.dataset.mode} · ${eur(montant)}`)){r.paye=paye;state.statut="fait";
-          sheet.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x.dataset.st==="fait"));dessinePaie()}});
+      p.innerHTML=r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
+        :`<button type="button" class="btn fini" id="btnFini">✓ Rendez-vous fini · ${eur(totalRdv(build()))} en espèces</button>`;
+      const fb=$("#btnFini");if(fb)fb.onclick=async()=>{const b=build(),montant=totalRdv(b),paye={mode:"Espèces",montant,le:iso(new Date())};
+        if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait",total:b.total}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;state.statut="fait";
+          sheet.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x.dataset.st==="fait"));closeSheet();render()}};
       const x=$("#paieX");if(x)x.onclick=async()=>{if(await write(()=>S.db.doc("rdv/"+r.id).update({paye:null}),"Paiement annulé")){r.paye=null;dessinePaie()}};
     }
     if(!isNew)dessinePaie();
+    // le total se change à la main (nail art en plus…) ; vide = on revient au prix des prestations
+    $("#totBox").onclick=e=>{if(e.target.tagName==="INPUT")return;const b=build(),t=$("#tot");
+      t.innerHTML=`<input type="number" inputmode="decimal" id="totIn" value="${totalRdv(b)}">`;const i=$("#totIn");i.focus();i.select();
+      const ok=()=>{const v=i.value.trim();state.total=v===""?null:Number(v);upd()};i.onblur=ok;i.onkeydown=k=>{if(k.key==="Enter"){k.preventDefault();i.blur()}}};
     ["#rDate","#rHeure","#rDuree","#rNote"].forEach(s=>$(s).addEventListener("input",upd));
     upd();
 
     $("#btnMsg").onclick=()=>{const b=build();let c=S.clients.get(b.clientId);if(b.clientId==="__new")c={prenom:$("#qPrenom").value};
       if(!b.prestation){toast("Choisis d'abord la prestation");return}
       const txt=confirmMsg(b,c);const box=$("#msgBox");box.hidden=false;
-      box.innerHTML=`<div class="msg" id="msgTxt">${esc(txt)}</div><div class="actions" style="margin-top:8px"><button type="button" class="btn" id="cp">Copier</button><button type="button" class="btn ghost" id="cpClose">Masquer</button></div>`;
-      box.querySelector("#cp").onclick=()=>{navigator.clipboard.writeText(txt).then(()=>toast("Copié, colle-le dans WhatsApp ou SMS ✨"),()=>{const sel=getSelection(),rg=document.createRange();rg.selectNodeContents(box.querySelector("#msgTxt"));sel.removeAllRanges();sel.addRange(rg);toast("Texte sélectionné : fais Copier")})};
+      box.innerHTML=`<div class="msg" id="msgTxt">${esc(txt)}</div><div class="actions" style="margin-top:8px">${c?.insta?`<a class="btn" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener" data-igtxt="${encodeURIComponent(txt)}">Instagram</a>`:`<button type="button" class="btn" id="cp">Copier</button>`}<button type="button" class="btn ghost" id="cpClose">Masquer</button></div>`;
+      box.querySelector("#cp")?.addEventListener("click",()=>{navigator.clipboard.writeText(txt).then(()=>toast("Copié ✨"),()=>{const sel=getSelection(),rg=document.createRange();rg.selectNodeContents(box.querySelector("#msgTxt"));sel.removeAllRanges();sel.addRange(rg);toast("Texte sélectionné : fais Copier")})});
       box.querySelector("#cpClose").onclick=()=>{box.hidden=true}};
 
     if(!isNew){$("#btnDel").onclick=()=>{$("#delBox").innerHTML=`<div class="confirm"><b>Supprimer définitivement ce rendez-vous ?</b><div class="actions"><button type="button" class="btn ghost" id="no">Non</button><button type="button" class="btn" style="background:var(--bad)" id="yes">Supprimer</button></div></div>`;
@@ -1742,7 +1767,7 @@ function openRappels(){
   const d=addDays(iso(new Date()),1),l=rdvDemain();
   openSheet(`<div class="sheet-h"><h3>Rappels de demain</h3></div>
     <p class="rq">Tu as <b>${l.length} rendez-vous</b> demain, ${fDay.format(parse(d))}. Veux-tu envoyer leur message de rappel par SMS à toutes tes clientes ?</p>
-    <div class="rl">${l.map(r=>{const c=S.clients.get(r.clientId);return `<div class="rli" data-r="${r.id}"><span class="av">${esc(initials(c))}</span><span class="rn"><b>${esc(nomC(c))}</b><small>${r.heure.replace(/^0/,"").replace(":","h")} · ${esc(r.prestation?.nom||"")}</small></span><span class="re"><span class="att">à envoyer</span></span></div>`}).join("")}</div>
+    <div class="rl">${l.map(r=>{const c=S.clients.get(r.clientId);return `<div class="rli" data-r="${r.id}"><span class="av">${esc(initials(c))}</span><span class="rn"><b>${esc(nomC(c))}</b><small>${r.heure.replace(/^0/,"").replace(":","h")} · ${esc(r.prestation?.nom||"")}</small></span><span class="re">${c?.insta?`<a class="igb" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener" data-igtxt="${encodeURIComponent(rappelTexte(r))}">Instagram</a>`:`<span class="att">à envoyer</span>`}</span></div>`}).join("")}</div>
     <button type="button" class="btn rgo" id="rGo" ${l.length?"":"disabled"}>${l.length?"Envoyer à toutes":"Rien à envoyer"}</button>
     <div class="rprog" hidden><span></span></div>
     <button type="button" class="btn ghost" data-act="close" style="margin-top:8px">Plus tard</button>
@@ -1944,7 +1969,7 @@ function montNotesC2(sh,c){const box=sh.querySelector("#etiq");if(!box)return;
   const choix=r=>{const i=r.o.findIndex(([,t])=>t&&trouve(t));return i>=0?i:c.reponses[r.k]==="non"?r.o.findIndex(([,t])=>!t):-1};
   function choisir(ri,i){const r=NOTES_C2[ri],avant=choix(r);c.etiquettes=c.etiquettes.filter(e=>!r.o.some(([,t])=>t&&t===e.t));delete c.reponses[r.k];
     if(i!==avant){const t=r.o[i][1];if(t)c.etiquettes.push({t,d:""});else c.reponses[r.k]="non"}
-    dessine();if(i!==avant&&r.o[i][2])box.querySelector(`[data-det="${ri}"]`)?.focus()}
+    dessine()}
   function dessine(){box.innerHTML=`<div class="c2">${NOTES_C2.map((r,ri)=>{
       if(r.texte){const e=trouve(r.texte);return `<div class="c2l"><i>${ICO[r.ic]}</i><span class="q">${esc(r.q)}</span><input class="c2t" data-txt="${ri}" value="${esc(e?.d||"")}" placeholder="${esc(r.ph)}" autocomplete="off"></div>`}
       const ch=choix(r),opt=ch>=0?r.o[ch]:null,e=opt&&opt[1]?trouve(opt[1]):null;
@@ -1973,11 +1998,10 @@ function openFiche(id,vue){
     <div class="ficheTop">
       <div style="min-width:0;flex:1;align-self:center"><div class="fnomrow"><button type="button" class="fnom" data-champ="nom">${nomHTML(c)}</button></div>
       </div>
-      <div class="ftop-btns">${animaux(c).length?`<button type="button" class="instabtn patte" data-pets aria-label="Ses animaux">${ICO.patte}</button>`:""}${c.insta?`<a class="instabtn" href="${esc(instaURL(c.insta))}" target="_blank" rel="noopener" aria-label="Instagram de ${esc(c.prenom||"la cliente")} (@${esc(instaNom(c.insta))})"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg></a>`:`<button type="button" class="instabtn vide" data-act="editCli" data-id="${id}" aria-label="Ajouter son Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg></button>`}</div></div>
+      <div class="ftop-btns">${c.tel?`<a class="instabtn" href="tel:${esc(telIntl(c.tel))}" aria-label="Appeler"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></a>`:`<button type="button" class="instabtn vide" data-act="editCli" data-id="${id}" aria-label="Ajouter son numéro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></button>`}${c.insta?`<a class="instabtn" href="${esc(instaURL(c.insta))}" target="_blank" rel="noopener" aria-label="Instagram de ${esc(c.prenom||"la cliente")} (@${esc(instaNom(c.insta))})"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg></a>`:`<button type="button" class="instabtn vide" data-act="editCli" data-id="${id}" aria-label="Ajouter son Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg></button>`}</div></div>
     <div class="ftop-tags">${niveau(c)==="nouvelle"?'<span class="ctag newtag">NEW</span>':""}${c.tel?`<button type="button" class="ctag teltag num" data-act="telMenu" aria-expanded="false">${esc(c.tel)}</button>`:""}${hab?`<span class="ctag habtag">${hab.fois>1?"Sa pose":"Dernière pose"} : <b>${esc(hab.prestation.nom)}</b></span>`:""}${anniv?`<span class="ctag anntag">${GATEAU}${esc(anniv)}</span>`:""}</div>
     <div class="animaux" id="fanim" hidden></div>
     ${c.tel?`<div class="telacts" id="telActs" hidden><a href="tel:${esc(telIntl(c.tel))}">Appeler</a><button type="button" data-act="copyTel" data-v="${esc(c.tel)}">Copier</button><button type="button" data-edit="tel">Modifier</button></div>`:""}
-    <div class="factions">${c.tel?`<a href="tel:${esc(telIntl(c.tel))}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></i>Appeler</a>`:`<button type="button" class="vide" data-act="editCli" data-id="${id}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></i>Appeler</button>`}<button type="button" class="p" data-act="rdvFor" data-id="${id}"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></i>Rdv</button></div>
     <div class="seg fseg" role="tablist"><button type="button" class="${notes?"":"on"}" data-fv="fiche">Fiche</button><button type="button" class="${notes?"on":""}" data-fv="notes">Notes</button></div>
     <div id="pFiche" ${notes?"hidden":""}>
     <div id="fproch"></div>
@@ -1987,7 +2011,7 @@ function openFiche(id,vue){
       <div class="kpi fproch"><div class="label">Dernière</div>${st.derniere?`<div class="v num">${esc(fJM.format(parse(st.derniere)))}</div>`:`<div class="v">—</div>`}</div>
     </div>
     ${st.lapins?`<div class="coach">${st.lapins} lapin${st.lapins>1?"s":""} au compteur. Pense à demander un acompte la prochaine fois.</div>`:""}
-    <div class="label" style="margin:14px 0 6px">Historique</div>
+    <div class="histh"><div class="label">Historique</div>${c.insta?`<a class="igmsg" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M21.5 3 10.2 13.9"/><path d="M21.5 3 15 21l-4.8-7.1L3 9.5Z"/></svg>Message</a>`:""}</div>
     <div class="list" id="histo">${hist.length?hist.map((r,i)=>`<button class="row ${i>2?"hplus":""}" style="border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left" data-act="editRdv" data-id="${r.id}" ${i>2?"hidden":""}>
       <span><b class="num">${fDate.format(parse(r.date))}</b><br><span style="font-size:13px;color:var(--muted)">${esc(r.prestation?.nom||"")}${(r.options||[]).length?" + "+r.options.map(o=>esc(o.nom)+(o.offert?" 🎁":"")).join(", "):""}${r.note?" · "+esc(r.note):""}</span></span>
       <span class="num" style="text-align:right;white-space:nowrap">${eur(totalRdv(r))}<br>${r.statut==="fait"?'<span class="tag fait">Fait</span>':r.statut==="lapin"?'<span class="tag lapin">Lapin</span>':r.statut==="annule"?'<span class="tag annule">Annulé</span>':""}</span></button>`).join("")
@@ -2254,7 +2278,7 @@ function openBulle(date,heure,anchor,pre){
   }
   function draw(){
     const c=S.clients.get(B.clientId);
-    let h=`<div class="when"><span class="whengros"><b class="num">${hh(heure)}</b><small>${cap(fDay.format(parse(date)))}</small></span><span class="whenr">${B.perso?`<button type="button" class="pill" data-b="cliente">Une cliente</button>`:c||B.nouv?`<button type="button" class="pill" data-b="chg">Autre cliente</button>`:""}${B.perso?"":`<button type="button" class="perso-rond" data-b="perso" aria-label="Bloquer ce créneau pour moi">Perso</button>`}</span></div>`;
+    let h=`<div class="when"><span class="whengros"><b class="num">${hh(heure)}</b><small>${cap(fDay.format(parse(date)))}${date<iso(new Date())?'<span class="passetag">Jour passé</span>':""}</small></span><span class="whenr">${B.perso?`<button type="button" class="pill" data-b="cliente">Une cliente</button>`:c||B.nouv?`<button type="button" class="pill" data-b="chg">Autre cliente</button>`:""}${B.perso?"":`<button type="button" class="perso-rond" data-b="perso" aria-label="Bloquer ce créneau pour moi">Perso</button>`}</span></div>`;
     if(B.perso){
       // Créneau perso : bloqué pour Marie, sans cliente ni prix
       h+=`<div class="label">C'est pour quoi ?</div><div class="pmots"><button type="button" class="${B.bloque?"":"on"}" data-b="ptype" data-v="perso">Pause déj</button><button type="button" class="${B.bloque?"on bl":""}" data-b="ptype" data-v="bloque">Bloqué</button></div>
@@ -2274,18 +2298,18 @@ function openBulle(date,heure,anchor,pre){
     }
     if(c||B.nouv){
       const p=B.prest,hab=B.habit&&p&&p.nom===B.habit.prestation.nom;
-      if(p)h+=`<div class="habit on">${hab?`<span class="k">${B.habit.fois>1?"comme d'hab":"comme la dernière fois"}</span>`:""}<b>${esc(p.nom)}</b><span class="num">fin à ${fin()}</span></div><div class="bor">ou autre chose</div>`;
+      if(p)h+=`<div class="habit on">${hab?`<span class="k">${B.habit.fois>1?"comme d'hab":"comme la dernière fois"}</span>`:""}<b>${esc(p.nom)}</b><span class="num">fin à ${fin()}</span></div><div class="bdur">${[[45,"45 min"],[60,"1 h"],[75,"1 h 15"],[90,"1 h 30"],[120,"2 h"]].map(([m,l])=>`<button type="button" class="${(p.duree||60)===m?"on":""}" data-b="bdur" data-m="${m}">${l}</button>`).join("")}</div><div class="bor">ou autre chose</div>`;
       else h+=`<div class="label">Prestation</div>`;
       h+=`<div class="tiles">${cat.prestations.map((x,i)=>x.nom===p?.nom?"":`<button type="button" class="tile" data-b="prest" data-i="${i}">${esc(x.nom)}</button>`).join("")}</div>`;
     }
-    h+=`<button type="button" class="clubprop" data-b="club"><span class="ccour">${COURONNE}</span>Proposer ce créneau au club</button>`;
+    if(!c&&!B.nouv)h+=`<button type="button" class="clubprop" data-b="club" ${B.q.trim()?"hidden":""}><span class="ccour">${COURONNE}</span>Proposer ce créneau au club</button>`;
     inn.innerHTML=h;
     foot.innerHTML=`<span><small>Total · fin à ${fin()}</small><b class="num">${B.prest&&B.prest.prix==null?"Prix à fixer":eur(B.prest?.prix||0)}</b></span><button type="button" class="btn" data-b="save">Réserver</button>`;
     place();
   }
   function pick(id){B.clientId=id;B.nouv=null;B.q="";B.habit=habitude(id);if(!B.manuel)B.prest=B.habit?{...B.habit.prestation,duree:B.habit.duree}:null;draw()}
   sh.addEventListener("input",e=>{
-    if(e.target.id==="bQ"){B.q=e.target.value;$("#bSug").innerHTML=sug()}
+    if(e.target.id==="bQ"){B.q=e.target.value;$("#bSug").innerHTML=sug();const cp=sh.querySelector(".clubprop");if(cp)cp.hidden=!!B.q.trim()}
     if(e.target.id==="bPrenom")B.nouv.prenom=e.target.value;
     if(e.target.id==="bTel")B.nouv.tel=e.target.value;
     if(e.target.id==="pLab")B.persoLab=e.target.value;
@@ -2305,6 +2329,7 @@ function openBulle(date,heure,anchor,pre){
     if(a==="perso"){B.perso=true;B.persoDur=B.persoDur||60;draw();return}
     if(a==="cliente"){B.perso=false;draw();return}
     if(a==="pdur"){B.persoDur=+b.dataset.m;draw();return}
+    if(a==="bdur"){B.prest={...B.prest,duree:+b.dataset.m};B.manuel=true;draw();return}
     if(a==="ptype"){B.bloque=b.dataset.v==="bloque";draw();return}
     if(a==="psave"){if(b.disabled)return;b.disabled=true;
       const body={date,heure,duree:B.persoDur,perso:true,bloque:!!B.bloque,label:B.bloque?"Bloqué":"Pause déj",clientId:"",prestation:null,options:[],statut:"perso",note:B.bloque?(B.persoNote||"").trim():""};
@@ -2489,6 +2514,9 @@ document.addEventListener("pointerup",()=>{azDoigt=false});document.addEventList
 document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;S._focusQ=true;render()}});
 document.getElementById("btnAdd").onclick=()=>S.tab==="clientes"?openClient(null):openRdv(null,{date:S.day});
 document.getElementById("btnReglages").onclick=openReglages;
+// Instagram : on copie le message, puis la conversation avec elle s'ouvre ; il n'y a plus qu'à coller et envoyer
+document.addEventListener("click",e=>{const a=e.target.closest("a[data-igtxt]");if(!a)return;const t=decodeURIComponent(a.dataset.igtxt);
+  try{navigator.clipboard.writeText(t)}catch(_){}toast("Message copié : colle-le dans la conversation")});
 document.addEventListener("input",e=>{const t=e.target;if(t.matches?.("input[data-insta]")&&t.value&&!t.value.startsWith("@"))t.value="@"+t.value.replace(/^\s+/,"")});
 document.getElementById("btnFaire").onclick=openAFaire;
 const pw=document.getElementById("pw");
