@@ -29,7 +29,8 @@
 :root,:root[data-theme="dark"]{color-scheme:light}
 
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;overscroll-behavior:none}
+html.fige,html.fige body{overflow:hidden}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -38,9 +39,20 @@ button{cursor:pointer}
 .num{font-variant-numeric:tabular-nums}
 
 .wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(72px + env(safe-area-inset-bottom,0px))}
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;isolation:isolate;background:var(--bg);box-shadow:0 8px 10px -10px rgba(78,46,34,.35);padding-block:8px 4px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+/* Le haut : une pilule transparente, comme la barre du bas (plus de trait) */
+header.top{position:sticky;top:calc(6px + env(safe-area-inset-top,0px));z-index:20;isolation:isolate;margin:6px 0 6px;display:flex;align-items:center;gap:4px;padding:4px 4px 4px 12px;border-radius:999px;
+  background:rgba(255,250,245,.6);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.8);
+  box-shadow:0 10px 24px -14px rgba(78,46,34,.45),inset 0 1px 0 rgba(255,255,255,.85)}
+.hdmid{flex:1;min-width:0;display:flex;justify-content:center}
+.hdmid .mlabel{flex:none}
+.hdmid .mlabel b,.hdmid .mlabel b .yr{font-size:13px;white-space:nowrap}
+.hdmid .mlabel small{display:block;font-size:9.5px;white-space:nowrap}
+.hdbtns{display:flex;gap:3px;align-items:center;flex:none}
+header.top .plusbtn{width:30px;height:30px;padding:0;justify-content:center}
+header.top .plusbtn svg{width:15px;height:15px}
+header.top .iconbtn{border:0;background:none;height:30px;min-width:30px;width:30px;padding:0}
 .brand{display:flex;flex-direction:column;gap:0;min-width:0}
-.brand img{height:22px;width:auto}
+.brand img{height:15px;width:auto}
 .brand .lg-light{display:var(--logo-light)}.brand .lg-dark{display:var(--logo-dark)}
 .brand small{display:none}
 .iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;height:34px;min-width:34px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:13px}
@@ -132,12 +144,12 @@ h2.sec{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.1
 
 /* Onglets */
 /* La barre Agenda / Clientes / Bilan : une pilule transparente qui flotte au-dessus du planning */
-nav.tabs{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:25;border-radius:999px;padding:5px;
+nav.tabs{position:fixed;left:max(22px,env(safe-area-inset-left,0px));right:max(22px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:25;border-radius:999px;padding:4px;
   background:rgba(255,250,245,.6);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.75);
   box-shadow:0 14px 30px -14px rgba(78,46,34,.55),inset 0 1px 0 rgba(255,255,255,.8)}
 nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-nav.tabs button{border:0;background:none;border-radius:999px;padding:7px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted)}
-nav.tabs button svg{width:22px;height:22px}
+nav.tabs button{border:0;background:none;border-radius:999px;padding:5px 0 4px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;font-weight:700;color:var(--muted)}
+nav.tabs button svg{width:19px;height:19px}
 nav.tabs button.on{background:rgba(78,46,34,.9);color:var(--bg)}
 .fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:26;width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-size:30px;line-height:1;box-shadow:0 10px 24px -8px rgba(109,31,46,.7)}
 
@@ -930,7 +942,8 @@ i.doux{font-size:12px;margin:0}
 <div class="wrap">
   <header class="top">
     <div class="brand"><img class="lg-light" src="assets/logo/dilerna-logo.webp" alt="Dilerna" width="113" height="44"><img class="lg-dark" src="assets/logo/dilerna-logo-clair.webp" alt="Dilerna" width="113" height="44"><small id="subtitle">mon carnet</small></div>
-    <div style="display:flex;gap:8px;align-items:center"><button class="plusbtn" id="btnAdd" aria-label="Ajouter">+ Rdv</button>
+    <div class="hdmid" id="hdMid"></div>
+    <div class="hdbtns"><button class="plusbtn" id="btnAdd" aria-label="Ajouter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     <button class="iconbtn cloche" id="btnFaire" aria-label="À faire"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="pastille num" id="nbFaire" hidden></span></button>
     <button class="iconbtn" id="btnReglages" aria-label="Réglages">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -1065,12 +1078,15 @@ const V=document.getElementById("view");
 {const scr=document.querySelector(".screen"),nav=document.querySelector("nav.tabs");if(scr&&nav)scr.appendChild(nav)}
 function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===S.tab||(b.dataset.tab==="agenda"&&S.tab==="jour")));
-  const ad=document.getElementById("btnAdd");if(ad)ad.textContent=S.tab==="clientes"?"+ Cliente":"+ Rdv";
+  const ad=document.getElementById("btnAdd");if(ad)ad.setAttribute("aria-label",S.tab==="clientes"?"Nouvelle cliente":"Nouveau rendez-vous");
+  // l'agenda tient sur l'écran : rien ne bouge en haut et en bas
+  document.documentElement.classList.toggle("fige",S.tab==="agenda");
   majCloche();
   if(S.tab==="agenda") V.innerHTML=renderSemaine();
   else if(S.tab==="jour"){subJour(S.day);V.innerHTML=renderJour()}
   else if(S.tab==="bilan") V.innerHTML=renderBilan();
   else V.innerHTML=renderClientes();
+  const hm=document.getElementById("hdMid");if(hm)hm.innerHTML=S.tab==="agenda"?S.moisBtn||"":"";
   if(S.tab==="agenda"){centrerJours();requestAnimationFrame(fitWeek)}
   const qi=document.getElementById("q"); if(qi&&S._focusQ){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length)}
   // Dans le cadre iPhone (ordinateur), la colonne A → Z se pose sur l'écran, sinon elle défilerait avec la liste
@@ -1115,10 +1131,9 @@ function renderSemaine(){
   const estMatin=r=>mins(r.heure)<13*60, estAprem=r=>mins(r.heure)+(Number(r.duree)||60)>13*60;
   let nM=0,nA=0;for(let i=0;i<7;i++)for(const r of actifsDe(addDays(ws,i))){if(estMatin(r))nM++;if(estAprem(r))nA++}
   const cnt=n=>n?`<span class="cnt num">${n}</span>`:"";
-  let h=`<div class="wkhead"><button class="iconbtn" data-act="wstep" data-n="-1" aria-label="Jours d'avant">‹</button>
-    <button type="button" class="mlabel" data-act="mois" aria-label="Voir tout le mois"><b>${titre}<span class="mfleche">▾</span></b><small class="num">${plg}</small></button>
-    <button class="iconbtn" data-act="wstep" data-n="1" aria-label="Jours d'après">›</button></div>
-`;
+  // le mois va dans la pilule du haut ; on change de jours en glissant
+  S.moisBtn=`<button type="button" class="mlabel" data-act="mois" aria-label="Voir tout le mois"><b>${titre}<span class="mfleche">▾</span></b><small class="num">${plg}</small></button>`;
+  let h="";
   // anniversaires du jour et rappels de demain : rangés dans la clochette « À faire » en haut à droite
   const nowD=new Date(),nowM=nowD.getHours()*60+nowD.getMinutes(),ici=t=>nowM>=t&&nowM<t+30; // la demi-heure où on est
   h+=`<div class="wview" id="wview"><div class="${S.wanim||""}">`;
@@ -1647,6 +1662,7 @@ function openClient(c,apres,prenom0){
       ${isNew?"":`<button class="btn danger" type="button" id="btnDelC">Supprimer la cliente</button><div id="delC"></div>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
+    requestAnimationFrame(()=>{sheet.style.height=sheet.offsetHeight+"px"}); // la feuille garde sa hauteur : Fiche et Notes au même endroit
     sheet.querySelectorAll("#allPick button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
     // le petit rond : ses notes à la place des champs (et retour), enregistrées avec la fiche
     let notesMontees=false;
