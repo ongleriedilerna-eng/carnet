@@ -1616,7 +1616,7 @@ function confirmMsg(r,c){
   return t;
 }
 
-const ALLERGIES=["Cuticules sensibles","Eczéma","Ongles fragiles","Ongles dédoublés","Peau sèche"];
+const ALLERGIES=["Cuticules sensibles","Eczéma","Ongles fragiles","Ongles dédoublés"];
 const GOUTTE=`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8C6 4.6 3.8 7 3.8 9.6a4.2 4.2 0 0 0 8.4 0C12.2 7 10 4.6 8 1.8Z" fill="currentColor"/></svg>`;
 const allergiesListe=v=>String(v||"").split(/\s*·\s*|\s*,\s*/).map(x=>x.trim()).filter(Boolean);
 function openClient(c){
@@ -1624,6 +1624,7 @@ function openClient(c){
   openSheet(`
     <div class="sheet-h"><h3>${isNew?"Nouvelle cliente":"Modifier la fiche"}</h3></div>
     <form class="f" id="fCli">
+      <div class="seg fseg" style="margin-bottom:0"><button type="button" class="on">Fiche</button><button type="button" id="cVersNotes">Notes</button></div>
       <div class="two"><div class="fld"><label for="cPrenom">Prénom</label><input id="cPrenom" value="${esc(c.prenom)}" required autocomplete="off"></div>
       <div class="fld"><label for="cNom">Nom</label><input id="cNom" value="${esc(c.nom)}" autocomplete="off"></div></div>
       <div class="two"><div class="fld"><label for="cTel">Téléphone</label><input id="cTel" type="tel" value="${esc(c.tel)}" autocomplete="off"></div>
@@ -1632,22 +1633,24 @@ function openClient(c){
       <div style="font-size:12.5px;color:var(--muted);margin-top:-4px">« Nouvelle » et « Fidèle » se mettent tout seuls : Nouvelle jusqu'à 1 prestation, Fidèle à partir de 3.</div>
       ${annivChamps(c)}
       ${(()=>{const mes=allergiesListe(c.allergies),autres=mes.filter(t=>!ALLERGIES.includes(t));
-        return `<div class="fld"><label for="cAllAutre">À savoir pour la pose (allergies)</label><div class="fsugg allpick" id="allPick">${[...ALLERGIES,...autres].map(t=>`<button type="button" class="${mes.includes(t)?"on":""}" data-al="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+        return `<div class="fld"><label for="cAllAutre">À savoir sur elle</label><div class="fsugg allpick une" id="allPick">${[...ALLERGIES,...autres].map(t=>`<button type="button" class="${mes.includes(t)?"on":""}" data-al="${esc(t)}">${esc(t)}</button>`).join("")}</div>
         <input id="cAllAutre" placeholder="Autre (facultatif)" autocomplete="off"></div>`})()}
-      <div class="fld"><label for="cNotes">Notes</label><textarea id="cNotes" placeholder="Forme préférée, longueur, couleurs, petits détails perso…">${esc(c.notes)}</textarea></div>
       <button class="btn" type="submit">${isNew?"Créer la fiche":"Enregistrer"}</button>
       ${isNew?"":`<button class="btn danger" type="button" id="btnDelC">Supprimer la cliente</button><div id="delC"></div>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
     sheet.querySelectorAll("#allPick button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+    // « Notes » : on enregistre la fiche puis on ouvre ses notes pour tout y mettre
+    let versNotes=false;
+    $("#cVersNotes").onclick=()=>{if(!$("#cPrenom").value.trim()){toast("Écris d'abord son prénom");$("#cPrenom").focus();return}versNotes=true;$("#fCli").requestSubmit()};
     if(!isNew)$("#btnDelC").onclick=()=>{$("#delC").innerHTML=`<div class="confirm"><b>Supprimer ${esc(nomC(c))} ?</b><span style="font-size:13px">Ses rendez-vous resteront dans l'agenda sous « Cliente supprimée ».</span><div class="actions"><button type="button" class="btn ghost" id="no">Non</button><button type="button" class="btn" style="background:var(--bad)" id="yes">Supprimer</button></div></div>`;
       $("#no").onclick=()=>{$("#delC").innerHTML=""};$("#yes").onclick=async()=>{if(await write(()=>S.db.doc("clientes/"+c.id).delete(),"Fiche supprimée"))closeSheet()}};
     $("#fCli").onsubmit=async e=>{e.preventDefault();
       const body={prenom:$("#cPrenom").value.trim(),nom:$("#cNom").value.trim(),tel:$("#cTel").value.trim(),insta:$("#cInsta").value.trim(),abonnee:$("#cAbo").checked,statut:$("#cAbo").checked?"abonnee":"",
-        allergies:[...[...sheet.querySelectorAll("#allPick button.on")].map(b=>b.dataset.al),$("#cAllAutre").value.trim()].filter(Boolean).join(" · "),notes:$("#cNotes").value.trim(),anniv:($("#cAnJ").value&&$("#cAnM").value)?$("#cAnM").value+"-"+$("#cAnJ").value:"",annee:Number($("#cAnA").value)||null,annivEnvoye:c.annivEnvoye||null,etiquettes:c.etiquettes||[],aPenser:c.aPenser||[],parrain:c.parrain||"",parlerDe:c.parlerDe||"",reponses:c.reponses||{},creeLe:c.creeLe||iso(new Date())};
+        allergies:[...[...sheet.querySelectorAll("#allPick button.on")].map(b=>b.dataset.al),$("#cAllAutre").value.trim()].filter(Boolean).join(" · "),notes:c.notes||"",anniv:($("#cAnJ").value&&$("#cAnM").value)?$("#cAnM").value+"-"+$("#cAnJ").value:"",annee:Number($("#cAnA").value)||null,annivEnvoye:c.annivEnvoye||null,etiquettes:c.etiquettes||[],aPenser:c.aPenser||[],parrain:c.parrain||"",parlerDe:c.parlerDe||"",reponses:c.reponses||{},creeLe:c.creeLe||iso(new Date())};
       if(c.exemple)body.exemple=true;
       const ref=isNew?S.db?.collection("clientes").doc():S.db?.doc("clientes/"+c.id);
-      if(await write(()=>ref.set(body),isNew?"Cliente ajoutée":"Fiche enregistrée")){closeSheet();if(!isNew)openFiche(c.id)}};
+      if(await write(()=>ref.set(body),isNew?"Cliente ajoutée":"Fiche enregistrée")){closeSheet();const nid=isNew?ref.id:c.id;if(!S.clients.has(nid))S.clients.set(nid,{id:nid,...body});if(versNotes)openFiche(nid,"notes");else if(!isNew)openFiche(nid)}};
   });
 }
 
@@ -1942,7 +1945,7 @@ function montProchain(sh,id){const box=sh.querySelector("#fproch");if(!box)retur
       box.querySelector("#prRes").onclick=()=>hab?openRdv(null,{clientId:id,date:S.day,prestation:{nom:hab.prestation.nom,prix:hab.prestation.prix},duree:hab.prestation.duree||60}):openRdv(null,{clientId:id,date:S.day})}}
   dessine()}
 const dureeTxt=m=>m>=60?Math.floor(m/60)+" h"+(m%60?" "+String(m%60).padStart(2,"0"):""):m+" min";
-// « À savoir pour la pose » : petite feuille claire qui monte du bas, une liste à cocher + « Autre… »
+// « À savoir sur elle » : petite feuille claire qui monte du bas, une liste à cocher + « Autre… »
 function ouvrirASavoir(sh,id){const scrim=sh.parentElement;scrim.querySelector(".gzone")?.remove();let ajout=false;
   const z=document.createElement("div");z.className="gzone neuf";scrim.appendChild(z);setTimeout(()=>z.classList.remove("neuf"),260);
   const c=()=>S.clients.get(id),liste=()=>allergiesListe(c()?.allergies);
@@ -1950,7 +1953,7 @@ function ouvrirASavoir(sh,id){const scrim=sh.parentElement;scrim.querySelector("
     const g=sh.querySelector("#goutte");if(g){g.classList.toggle("vide",!l.length);g.querySelector(".gnb")?.remove();if(l.length)g.insertAdjacentHTML("beforeend",`<i class="gnb">${l.length}</i>`)}};
   function dessine(){const l=liste(),tous=[...ALLERGIES,...l.filter(t=>!ALLERGIES.includes(t))];
     z.innerHTML=`<div class="gvoile"></div><div class="gfeuille"><div class="grab"></div>
-      <div class="gtete"><span class="label">À savoir pour la pose</span></div>
+      <div class="gtete"><span class="label">À savoir sur elle</span></div>
       ${tous.map(t=>`<button type="button" class="gligne" data-gt="${esc(t)}" aria-pressed="${l.includes(t)}"><span class="case ${l.includes(t)?"on":""}">${l.includes(t)?"✓":""}</span><span>${esc(t)}</span></button>`).join("")}
       <button type="button" class="gligne gautre" data-gautre aria-expanded="${ajout}"><span class="case plus">+</span><span>Autre…</span></button>
       ${ajout?`<div class="fedit"><input class="bnote" id="gAutre" placeholder="Ex : ongles rongés" autocomplete="off"><span><button type="button" class="btn" id="gOk" style="width:auto;min-height:40px;padding:8px 16px">Ajouter</button></span></div>`:""}</div>`;
