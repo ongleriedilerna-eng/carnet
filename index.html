@@ -2148,8 +2148,8 @@ function openPerso(r){let dur=Number(r.duree)||60,bl=!!r.bloque;
   const fin=()=>hhmm(mins(r.heure)+dur).replace(/^0/,"").replace(":","h");
   openSheet(`<div class="sheet-h"><span><h3 style="margin:0" id="pTitre">${bl?"Bloqué":esc(r.label||"Pause déj")}</h3><small style="color:var(--muted);font-size:12.5px">${cap(fDay.format(parse(r.date)))} · ${r.heure.replace(/^0/,"").replace(":","h")} – <span id="pFin">${fin()}</span></small></span></div>
     <div class="label" style="margin:12px 0 6px">C'est pour quoi ?</div><div class="pmots" id="pType"><button type="button" class="${bl?"":"on"}" data-v="perso">Pause déj</button><button type="button" class="${bl?"on bl":""}" data-v="bloque">Bloqué</button></div>
-    <input class="bnote" id="pNote2" placeholder="Note : pourquoi je bloque (facultatif)" value="${esc(r.note||"")}" autocomplete="off" style="margin-top:8px" ${bl?"":"hidden"}>
-    <div class="label" style="margin:12px 0 6px">Durée</div><div class="tiles" id="pDur">${[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[120,"2 h"]].map(([m,l])=>`<button type="button" class="tile ${dur===m?"on":""}" data-m="${m}">${l}</button>`).join("")}</div>
+    <div class="label" style="margin:12px 0 6px">Durée</div><div class="tiles" id="pDur">${[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[120,"2 h"],[150,"2 h 30"],[180,"3 h"]].map(([m,l])=>`<button type="button" class="tile ${dur===m?"on":""}" data-m="${m}">${l}</button>`).join("")}</div>
+    <input class="bnote" id="pNote2" placeholder="Note : pourquoi je bloque (facultatif)" value="${esc(r.note||"")}" autocomplete="off" style="margin-top:10px" ${bl?"":"hidden"}>
     <div class="actions" style="margin-top:14px"><button type="button" class="btn ghost" id="pDel">Libérer le créneau</button><button type="button" class="btn" id="pOk">Enregistrer</button></div>`,sh=>{
     sh.querySelectorAll("#pDur [data-m]").forEach(b=>b.onclick=()=>{dur=+b.dataset.m;sh.querySelectorAll("#pDur [data-m]").forEach(x=>x.classList.toggle("on",x===b));sh.querySelector("#pFin").textContent=fin()});
     sh.querySelectorAll("#pType [data-v]").forEach(b=>b.onclick=()=>{bl=b.dataset.v==="bloque";sh.querySelectorAll("#pType [data-v]").forEach(x=>{const on=x.dataset.v===(bl?"bloque":"perso");x.classList.toggle("on",on);x.classList.toggle("bl",on&&bl)});
@@ -2210,8 +2210,8 @@ function openBulle(date,heure,anchor,pre){
     if(B.perso){
       // Créneau perso : bloqué pour Marie, sans cliente ni prix
       h+=`<div class="label">C'est pour quoi ?</div><div class="pmots"><button type="button" class="${B.bloque?"":"on"}" data-b="ptype" data-v="perso">Pause déj</button><button type="button" class="${B.bloque?"on bl":""}" data-b="ptype" data-v="bloque">Bloqué</button></div>
-        ${B.bloque?`<input class="bnote" id="pNote" placeholder="Note : pourquoi je bloque (facultatif)" value="${esc(B.persoNote||"")}" autocomplete="off">`:""}
-        <div class="label">Durée</div><div class="tiles">${[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[120,"2 h"]].map(([m,l])=>`<button type="button" class="tile ${B.persoDur===m?"on":""}" data-b="pdur" data-m="${m}">${l}</button>`).join("")}</div>`;
+        <div class="label">Durée</div><div class="tiles">${[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[120,"2 h"],[150,"2 h 30"],[180,"3 h"]].map(([m,l])=>`<button type="button" class="tile ${B.persoDur===m?"on":""}" data-b="pdur" data-m="${m}">${l}</button>`).join("")}</div>
+        ${B.bloque?`<input class="bnote" id="pNote" placeholder="Note : pourquoi je bloque (facultatif)" value="${esc(B.persoNote||"")}" autocomplete="off">`:""}`;
       inn.innerHTML=h;
       foot.innerHTML=`<span><small>Bloqué</small><b class="num">${hh(heure)} – ${fin()}</b></span><button type="button" class="btn" data-b="psave">Bloquer</button>`;
       place();return;
