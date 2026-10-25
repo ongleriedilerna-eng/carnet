@@ -548,7 +548,7 @@ button.wday:active{background:var(--accent-soft)}
 .ftop-tags{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin:-4px 0 12px!important}
 .ftop-tags::-webkit-scrollbar{display:none}
 .ftop-tags .ctag{white-space:nowrap;flex:none}
-.fsugg.une{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.fsugg.une{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding-right:28px;-webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent)}
 .fsugg.une::-webkit-scrollbar{display:none}
 .fsugg.une button{flex:none}
 .fsugg button.on{background:var(--choco);border:1.5px solid var(--choco);color:var(--bg)}
@@ -2262,7 +2262,7 @@ function openBulle(date,heure,anchor){
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&L.innerHTML)closeSheet()});
 // Fermer une feuille en la faisant glisser vers le bas, au doigt ou à la souris
 let gl=null;
-function glDebut(t,x,y){const sh=t.closest?.(".scrim .sheet");if(!sh||t.closest("input,textarea,select,.gzone,.dscroll,.filters"))return;
+function glDebut(t,x,y){const sh=t.closest?.(".scrim .sheet");if(!sh||t.closest("input,textarea,select,.gzone,.dscroll,.filters,.fsugg,.sq-rep,.ftop-tags"))return;
   if(sh.scrollTop>2&&!t.closest(".grab,.sheet-h"))return;gl={sh,x,y,dy:0,moved:false}}
 function glBouge(x,y){if(!gl)return false;const dy=y-gl.y,dx=x-gl.x;
   if(!gl.moved){if(Math.abs(dy)<8&&Math.abs(dx)<8)return false;if(dy<0||Math.abs(dx)>Math.abs(dy)){gl=null;return false}gl.moved=true;gl.sh.style.transition="none"}
