@@ -697,6 +697,10 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .stpills button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
 .plusElle{margin-top:12px}
 .plusElle .fedit{margin-top:8px}
+/* Date et heure écrites en clair ; le vrai sélecteur, invisible, est posé dessus */
+.pick{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 12px;font-size:16px;white-space:nowrap;overflow:hidden;color:var(--ink)}
+.pick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0}
+.glisse b{position:absolute;left:0;top:0;bottom:0;width:58px;border-radius:999px;background:var(--choco);opacity:.9}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1570,8 +1574,8 @@ function openRdv(r, preset={}){
         <div class="fld"><label for="qTel">Téléphone</label><input id="qTel" type="tel" autocomplete="off"></div>
       </div></div>
       <div class="three">
-        <div class="fld"><label for="rDate">Date</label><input id="rDate" type="date" value="${r.date}" required></div>
-        <div class="fld"><label for="rHeure">Heure</label><input id="rHeure" type="time" step="900" value="${r.heure}" required></div>
+        <div class="fld"><label for="rDate">Date</label><div class="pick"><span id="rDateTxt"></span><input id="rDate" type="date" value="${r.date}" required></div></div>
+        <div class="fld"><label for="rHeure">Heure</label><div class="pick"><span id="rHeureTxt"></span><input id="rHeure" type="time" step="900" value="${r.heure}" required></div></div>
         <div class="fld"><label for="rDuree">Durée</label><input id="rDuree" type="number" inputmode="numeric" min="15" step="15" value="${r.duree}"></div>
       </div>
       <div class="quick" id="quick" aria-label="Raccourcis de date">${[["+1 sem",7],["+2 sem",14],["+3 sem",21],["+4 sem",28],["+6 sem",42]].map(([l,n])=>`<button type="button" data-plus="${n}">${l}</button>`).join("")}</div>
@@ -1584,7 +1588,6 @@ function openRdv(r, preset={}){
       <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
       <button class="btn ghost" type="button" id="btnMsg">Préparer le message de confirmation</button>
       <div id="msgBox" hidden></div>
-      ${isNew?"":`<button class="btn ghost" type="button" id="btnNext">↻ Reprendre un rdv dans 3 semaines</button>`}
       ${isNew?"":`<button class="btn danger" type="button" id="btnDel">Supprimer ce rendez-vous</button><div id="delBox"></div>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
@@ -1593,6 +1596,8 @@ function openRdv(r, preset={}){
     function build(){return {...r,clientId:$("#rClient").value,date:$("#rDate").value,heure:$("#rHeure").value,duree:Number($("#rDuree").value)||60,
       prestation:prest(),options:state.opts.filter(o=>o.on).map(({nom,prix,offert})=>({nom,prix,offert:!!offert})),statut:state.statut,note:$("#rNote").value.trim(),total:state.total}}
     function upd(){const b=build();
+      // la date et l'heure écrites simplement : 26-10-2026 et 9h30
+      $("#rDateTxt").textContent=b.date?b.date.split("-").reverse().join("-"):"—";$("#rHeureTxt").textContent=b.heure?b.heure.replace(/^0/,"").replace(":","h"):"—";
       if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;const gs=$("#glisse span");if(gs)gs.textContent=`Glisse : fini · ${eur(totalRdv(b))}`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
     const norm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     function lastOf(id){const t=iso(new Date());const l=S.rdvs.filter(x=>x.clientId===id&&x.id!==r.id&&x.statut!=="annule"&&x.prestation).sort((a,b)=>(b.date+b.heure).localeCompare(a.date+a.heure));return l.find(x=>x.date<=t)||l[0]}
@@ -1632,26 +1637,27 @@ function openRdv(r, preset={}){
     sheet.querySelectorAll("[data-gift]").forEach(g=>g.onclick=e=>{e.preventDefault();const o=state.opts[+g.dataset.gift];o.offert=!o.offert;g.classList.toggle("on",o.offert);
       if(o.offert)toast("Sûre ? Un extra offert, c'est "+eur(o.prix)+" en moins 😉");upd()});
     sheet.querySelectorAll("#quick button").forEach(q=>q.onclick=()=>{$("#rDate").value=addDays(iso(new Date()),+q.dataset.plus);upd()});
-    if(!isNew)$("#btnNext").onclick=()=>{const opts=(r.options||[]).filter(o=>!o.offert);closeSheet();
+    if(!isNew&&$("#btnNext"))$("#btnNext").onclick=()=>{const opts=(r.options||[]).filter(o=>!o.offert);closeSheet();
       openRdv(null,{clientId:r.clientId,date:addDays(r.date,21),heure:r.heure,duree:r.duree,prestation:r.prestation,options:opts})};
     sheet.querySelectorAll("#seg button").forEach(b=>b.onclick=()=>{state.statut=b.dataset.st;sheet.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b))});
     // Encaisser : un geste par moyen de paiement ; le rdv passe en « Fait » et le montant est gardé pour le Bilan
     // « Rendez-vous fini » : un seul geste, encaissé en espèces, le rdv passe en « Fait » et le montant va dans le Bilan
     function dessinePaie(){const p=$("#paie");if(!p)return;
       p.innerHTML=(r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
-        :`<div class="glisse" id="glisse"><i id="gK" aria-label="Glisser pour finir">›</i><span>Glisse : fini · ${eur(totalRdv(build()))}</span></div>`)
+        :`<div class="glisse" id="glisse"><b id="gF"></b><i id="gK" aria-label="Glisser pour finir">›</i><span>Glisse : fini · ${eur(totalRdv(build()))}</span></div>`)
         +`<div class="stpills">${[["lapin","Lapin"],["annule","Annulé"]].map(([k,l])=>`<button type="button" data-stp="${k}" class="${state.statut===k?"on":""}">${l}</button>`).join("")}</div>`;
       async function finir(){const b=build(),montant=totalRdv(b),paye={mode:"Espèces",montant,le:iso(new Date())};
         if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait",total:b.total}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;state.statut="fait";closeSheet();render()}else dessinePaie()}
       // le rond se fait glisser jusqu'au bout ; lâché avant, il revient
-      const g=$("#glisse"),k=$("#gK");if(g&&k){let x0=null,dx=0;const max=()=>g.clientWidth-k.offsetWidth-10;
-        k.onpointerdown=e=>{x0=e.clientX;dx=0;k.setPointerCapture(e.pointerId);k.style.transition="none"};
-        k.onpointermove=e=>{if(x0==null)return;dx=Math.max(0,Math.min(max(),e.clientX-x0));k.style.transform=`translateX(${dx}px)`};
-        k.onpointerup=k.onpointercancel=()=>{if(x0==null)return;x0=null;k.style.transition="transform .2s";
-          if(dx>=max()*.85){k.style.transform=`translateX(${max()}px)`;finir()}else{k.style.transform="";dx=0}}}
+      const g=$("#glisse"),k=$("#gK"),f=$("#gF");if(g&&k){let x0=null,dx=0;const max=()=>g.clientWidth-k.offsetWidth-10;
+        const suit=x=>{k.style.transform=x?`translateX(${x}px)`:"";f.style.width=(58+x)+"px"};
+        k.onpointerdown=e=>{x0=e.clientX;dx=0;k.style.transition=f.style.transition="none";try{k.setPointerCapture(e.pointerId)}catch(_){}};
+        k.onpointermove=e=>{if(x0==null)return;dx=Math.max(0,Math.min(max(),e.clientX-x0));suit(dx)};
+        k.onpointerup=k.onpointercancel=()=>{if(x0==null)return;x0=null;k.style.transition="transform .2s";f.style.transition="width .2s";
+          if(dx>=max()*.85){suit(max());finir()}else{suit(0);dx=0}}}
       // LAPIN / ANNULÉ : un toucher l'enregistre, un second le retire
       p.querySelectorAll("[data-stp]").forEach(b=>b.onclick=async()=>{const nv=state.statut===b.dataset.stp?"prevu":b.dataset.stp;
-        if(await write(()=>S.db.doc("rdv/"+r.id).update({statut:nv}),nv==="lapin"?"Noté : lapin":nv==="annule"?"Rendez-vous annulé":"Remis en prévu")){state.statut=nv;r.statut=nv;dessinePaie();render()}});
+        if(await write(()=>S.db.doc("rdv/"+r.id).update({statut:nv}))){state.statut=nv;r.statut=nv;dessinePaie();render()}});
       const x=$("#paieX");if(x)x.onclick=async()=>{if(await write(()=>S.db.doc("rdv/"+r.id).update({paye:null}),"Paiement annulé")){r.paye=null;dessinePaie()}};
     }
     if(!isNew)dessinePaie();
@@ -1669,6 +1675,7 @@ function openRdv(r, preset={}){
       t.innerHTML=`<input type="number" inputmode="decimal" id="totIn" value="${totalRdv(b)}">`;const i=$("#totIn");i.focus();i.select();
       const ok=()=>{const v=i.value.trim();state.total=v===""?null:Number(v);upd()};i.onblur=ok;i.onkeydown=k=>{if(k.key==="Enter"){k.preventDefault();i.blur()}}};
     ["#rDate","#rHeure","#rDuree","#rNote"].forEach(s=>$(s).addEventListener("input",upd));
+    ["#rDate","#rHeure"].forEach(s=>{$(s).addEventListener("change",upd);$(s).addEventListener("click",e=>{try{e.target.showPicker?.()}catch(_){}})});
     upd();
 
     $("#btnMsg").onclick=()=>{const b=build();let c=S.clients.get(b.clientId);if(b.clientId==="__new")c={prenom:$("#qPrenom").value};
