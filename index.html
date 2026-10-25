@@ -228,7 +228,8 @@ form.f{display:flex;flex-direction:column;gap:12px}
 .wday .l{font-size:11.5px;font-weight:600;color:var(--muted)}
 .wday .n{font:700 19px/1.15 var(--body);color:#CDBBA2}
 .wday.today .n{color:var(--choco);font-weight:800}.wday.today .l{color:var(--choco);font-weight:800}
-.wday.sel::after{content:"";position:absolute;left:22%;right:22%;bottom:-1px;height:3px;border-radius:3px;background:var(--choco)}
+.wday.sel::after{content:"";position:absolute;left:22%;right:22%;bottom:-1px;height:3px;border-radius:3px;background:var(--accent)}
+.wday.sel .n,.wday.sel .l{color:var(--accent);font-weight:800}
 .wtimes{position:relative}
 .wtimes span{position:absolute;left:0;right:4px;font-size:10.5px;font-weight:400;color:var(--muted);text-align:right;transform:translateY(-6px)}
 .wtimes span.full{font-weight:800;color:var(--choco);font-size:12.5px}
