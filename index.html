@@ -654,6 +654,23 @@ button.wday:active{background:var(--accent-soft)}
 .sq-rep::-webkit-scrollbar{display:none}
 .sq-rep button{flex:none;border:0;border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;background:var(--choco);color:var(--bg)}
 .sliste .fedit{box-shadow:none;padding:4px 0 10px;border-bottom:1px solid var(--line);border-radius:0}
+/* Abonnée : la couronne posée de côté sur son prénom */
+.ctilt{display:inline-block;width:.78em;height:.55em;color:#B8925A;transform:translate(-1px,-.5em) rotate(24deg);margin-right:1px;font-style:normal;vertical-align:baseline}
+.ctilt svg{display:block;width:100%;height:100%}
+/* Notes de la création de fiche (C2) */
+.c2{background:var(--surface);border-radius:16px;padding:2px 12px;box-shadow:var(--shadow)}
+.c2l{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--line)}
+.c2>:last-child{border-bottom:0}
+.c2l>i{flex:none;width:26px;height:26px;border-radius:8px;background:var(--bg-alt);color:var(--choco);display:grid;place-items:center;font-style:normal}
+.c2l>i svg{width:15px;height:15px}
+.c2l .q{flex:1;min-width:0;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c2s{flex:none;display:flex;background:var(--bg-alt);border-radius:999px;padding:2px}
+.c2s button{border:0;background:none;font-size:12px;font-weight:800;color:var(--b2);padding:5px 9px;border-radius:999px;white-space:nowrap}
+.c2s button.on{background:var(--choco);color:var(--bg)}
+.c2d{padding:0 0 9px 33px;border-bottom:1px solid var(--line)}
+.c2d input,.c2l .c2t{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 10px;font-size:16px;color:var(--ink)}
+.c2d input{width:100%}
+.c2l .c2t{flex:none;width:48%;border-radius:999px;padding:6px 12px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1036,10 +1053,12 @@ function nbPresta(id){const t=iso(new Date());return S.rdvs.filter(r=>r.clientId
 function niveau(c){if(!c)return "";const n=nbPresta(c.id);return n>=3?"fidele":n<=1?"nouvelle":""}
 function tagHTML(c){return ""}
 const COURONNE=`<svg viewBox="0 0 20 14" aria-hidden="true"><path d="M2 12.5h16L19 3.2l-5 4.2L10 1 6 7.4 1 3.2Z" fill="currentColor"/></svg>`;
+const CTILT=`<i class="ctilt" aria-label="Club Dilerna">${COURONNE}</i>`; // posée de côté sur son prénom
 // le prénom en plus doux, le nom de famille bien foncé ; un petit cœur pour les fidèles
 function nomHTML(c){if(!c)return "Cliente supprimée";const p=(c.prenom||"").trim(),n=(c.nom||"").trim().replace(/^\(.*\)$/,"");
-  return (p?`<span class="${n?"pn":"nn"}">${esc(p)}</span>`:"")+(p&&n?" ":"")+(n?`<span class="nn">${esc(n)}</span>`:"")+(p||n?"":"Sans nom")}
-const avClub=c=>isAbo(c)?`<i class="couronne" aria-label="Club Dilerna">${COURONNE}</i>`:"";
+  const cr=isAbo(c)?CTILT:"";
+  return (p?`<span class="${n?"pn":"nn"}">${esc(p)}</span>${cr}`:"")+(p&&n?" ":"")+(n?`<span class="nn">${esc(n)}</span>${p?"":cr}`:"")+(p||n?"":"Sans nom")}
+const avClub=c=>""; // la couronne est maintenant sur son prénom (nomHTML)
 function avNew(c){return niveau(c)==="nouvelle"?" estnew":""}
 function coeur(c){return ""}
 function totalRdv(r){return (r.prestation?.prix||0)+(r.options||[]).filter(o=>!o.offert).reduce((a,o)=>a+(o.prix||0),0)}
@@ -1164,7 +1183,7 @@ function renderSemaine(){
       const top=(s0-A)/30*SLOT, ht=Math.max(18,(e0-s0)/30*SLOT-2), c=S.clients.get(x.r.clientId);
       const w=100/x.cols;
       h+=`<button class="wblk ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+1}px;height:${ht}px;left:calc(${w*x.col}% + 1px);right:auto;width:calc(${w}% - 2px)" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}" aria-label="${esc(x.r.heure)} ${esc(nomC(c))} ${esc(x.r.prestation?.nom||"")}">
-        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase():(isAbo(c)?'<i class="hk">♥</i>':"")+esc(nomCourt(c))}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}</button>`;
+        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase():esc(nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}</button>`;
     }
     h+=`</div>`;
   }
@@ -1202,7 +1221,7 @@ function renderJour(){
     const top=(s0-H0*60)/30*DROW, ht=Math.max(28,(e0-s0)/30*DROW-3);
     const c=S.clients.get(x.r.clientId), w=100/x.cols;
     h+=`<button class="blk ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${ht<46?"short":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+2}px;height:${ht}px;left:${w*x.col}%;width:calc(${w}% - 2px);right:auto" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}">
-      <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))} – ${hhmm(x.e).replace(/^0/,"").replace(":","h")}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"Pause":x.r.bloque?"Bloqué":(x.r.label||"Perso")):(isAbo(c)?'<i class="hk">♥</i>':"")+esc(nomInit(c).toUpperCase())}</span>${ht>=64&&!x.r.perso?`<span class="p">${esc([x.r.prestation?.nom,...(x.r.options||[]).map(o=>o.nom)].filter(Boolean).join(" + "))} · ${eur(totalRdv(x.r))}</span>`:""}</button>`;
+      <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))} – ${hhmm(x.e).replace(/^0/,"").replace(":","h")}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"Pause":x.r.bloque?"Bloqué":(x.r.label||"Perso")):esc(nomInit(c).toUpperCase())+(isAbo(c)?CTILT:"")}</span>${ht>=64&&!x.r.perso?`<span class="p">${esc([x.r.prestation?.nom,...(x.r.options||[]).map(o=>o.nom)].filter(Boolean).join(" + "))} · ${eur(totalRdv(x.r))}</span>`:""}</button>`;
   }
   h+=`</div>`;
   h+=`</div>`;
@@ -1571,7 +1590,7 @@ function openRdv(r, preset={}){
       const starts=all.filter(c=>norm(c.prenom).startsWith(q)||norm(c.nom).startsWith(q)||norm(nomC(c)).startsWith(q));
       const cont=all.filter(c=>!starts.includes(c)&&norm(nomC(c)).includes(q));
       const res=[...starts,...cont].sort((a,b)=>nomC(a).localeCompare(nomC(b),"fr")).slice(0,6);
-      box.innerHTML=res.map(c=>`<button type="button" data-cli="${c.id}" style="--c:${stC(c)}"><i></i>${isAbo(c)?`<span class="ccour">${COURONNE}</span>`:""}${esc(nomC(c))}<small>${niveau(c)==="nouvelle"?"NEW":""}</small></button>`).join("")+
+      box.innerHTML=res.map(c=>`<button type="button" data-cli="${c.id}" style="--c:${stC(c)}"><i></i>${esc(nomC(c))}${isAbo(c)?CTILT:""}<small>${niveau(c)==="nouvelle"?"NEW":""}</small></button>`).join("")+
         `<button type="button" class="new" data-newcli="1">+ Nouvelle cliente « ${esc($("#rCliQ").value.trim())} »</button>`;
       box.hidden=false;
       box.querySelectorAll("[data-cli]").forEach(b=>b.onclick=()=>pickCli(b.dataset.cli));
@@ -1650,7 +1669,7 @@ function openClient(c,apres,prenom0){
       <div class="fld"><label for="cNom">Nom</label><input id="cNom" value="${esc(c.nom)}" autocomplete="off"></div></div>
       <div class="two"><div class="fld"><label for="cTel">Téléphone</label><input id="cTel" type="tel" value="${esc(c.tel)}" autocomplete="off"></div>
       <div class="fld"><label for="cInsta">Instagram</label><input id="cInsta" data-insta value="${esc(c.insta)}" placeholder="@" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div></div>
-      <label class="abo" for="cAbo"><input type="checkbox" id="cAbo" ${isAbo(c)?"checked":""}><span class="hrt">♥</span><span><b>Cliente abonnée</b><small>Un petit cœur s'affiche devant son prénom</small></span></label>
+      <label class="abo" for="cAbo"><input type="checkbox" id="cAbo" ${isAbo(c)?"checked":""}><span class="ccour fc">${COURONNE}</span><span><b>Cliente abonnée</b><small>Une petite couronne se pose sur son prénom</small></span></label>
       <div style="font-size:12.5px;color:var(--muted);margin-top:-4px">« Nouvelle » et « Fidèle » se mettent tout seuls : Nouvelle jusqu'à 1 prestation, Fidèle à partir de 3.</div>
       ${annivChamps(c)}
       ${(()=>{const mes=allergiesListe(c.allergies),autres=mes.filter(t=>!ALLERGIES.includes(t));
@@ -1667,7 +1686,7 @@ function openClient(c,apres,prenom0){
     // le petit rond : ses notes à la place des champs (et retour), enregistrées avec la fiche
     let notesMontees=false;
     $("#cRond").onclick=()=>{const v=$("#cNotesBox").hidden;$("#cNotesBox").hidden=!v;$("#cChamps").hidden=v;$("#cRond").classList.toggle("on",v);$("#cRond").setAttribute("aria-pressed",v);
-      if(v&&!notesMontees){notesMontees=true;montEtiq(sheet,c.id||"",c)}};
+      if(v&&!notesMontees){notesMontees=true;montNotesC2(sheet,c)}};
     if(!isNew)$("#btnDelC").onclick=()=>{$("#delC").innerHTML=`<div class="confirm"><b>Supprimer ${esc(nomC(c))} ?</b><span style="font-size:13px">Ses rendez-vous resteront dans l'agenda sous « Cliente supprimée ».</span><div class="actions"><button type="button" class="btn ghost" id="no">Non</button><button type="button" class="btn" style="background:var(--bad)" id="yes">Supprimer</button></div></div>`;
       $("#no").onclick=()=>{$("#delC").innerHTML=""};$("#yes").onclick=async()=>{if(await write(()=>S.db.doc("clientes/"+c.id).delete(),"Fiche supprimée"))closeSheet()}};
     $("#fCli").onsubmit=async e=>{e.preventDefault();
@@ -1823,7 +1842,7 @@ function aParler(l){const rang=x=>{const i=ETQ_ORDRE.indexOf(x.t);return i<0?99:
 const ETQ_DIT={"En couple":d=>d?`En couple avec ${d}`:"En couple","Mariée":d=>d?`Mariée à ${d}`:"Mariée","Fiancée":d=>d?`Fiancée à ${d}`:"Fiancée",
   "Enfants":d=>d?`Ses enfants : ${d}`:"A des enfants","Bébé":d=>d?`Un bébé, ${d}`:"A un bébé","Ado à la maison":d=>d?`Un ado, ${d}`:"Un ado à la maison",
   "Chien":d=>d?`Un chien, ${d}`:"A un chien","Chat":d=>d?`Un chat, ${d}`:"A un chat","Cheval":d=>d?`Un cheval, ${d}`:"A un cheval",
-  "Voyage bientôt":d=>d?`Part bientôt à ${d}`:"Part bientôt en voyage","Partie en vacances":d=>d?`Partie en vacances à ${d}`:"Partie en vacances","Commerçante":d=>d?`Commerce : ${d}`:"Commerçante","Sportive":d=>d?`Fait ${d}`:"Fait du sport","Étudiante":d=>d?`Étudiante en ${d}`:"Étudiante",
+  "Voyage bientôt":d=>d?`Part bientôt à ${d}`:"Part bientôt en voyage","Partie en vacances":d=>d?`Partie en vacances à ${d}`:"Partie en vacances","Commerçante":d=>d?`Commerce : ${d}`:"Commerçante","Travail":d=>d?`Travaille : ${d}`:"Travaille","Sportive":d=>d?`Fait ${d}`:"Fait du sport","Étudiante":d=>d?`Étudiante en ${d}`:"Étudiante",
   "Célibataire":()=>"Célibataire","Bavarde":()=>"Adore papoter","Discrète":()=>"Plutôt calme pendant la pose"};
 const etqDit=e=>(ETQ_DIT[e.t]||(d=>d?`${e.t} · ${d}`:e.t))(e.d);
 const ICO={
@@ -1849,7 +1868,7 @@ const ETQ_Q=[
   {k:"couple",q:"Elle est en couple ?",r:[["Oui","En couple",1],["Non","Célibataire"]],t:["En couple","Mariée","Fiancée","Célibataire"]},
   {k:"enfants",q:"Elle a des enfants ?",r:[["Oui","Enfants",1],["Non",""]],t:["Enfants","Bébé","Ado à la maison"]},
   {k:"animal",q:"Elle a un animal ?",r:[["Un chien","Chien",1],["Un chat","Chat",1],["Non",""]],t:["Chien","Chat","Cheval"]},
-  {k:"metier",q:"Elle travaille dans quoi ?",r:[["Infirmière","Infirmière"],["Commerce","Commerçante",1],["Bureau","Bureau"],["Étudiante","Étudiante",1]],t:["Infirmière","Aide-soignante","Commerçante","Restauration","Bureau","Étudiante","Prof","Coiffeuse","Esthéticienne","Indépendante","Retraitée","Maman au foyer","Saisonnière"]},
+  {k:"metier",q:"Elle travaille dans quoi ?",r:[["Infirmière","Infirmière"],["Commerce","Commerçante",1],["Bureau","Bureau"],["Étudiante","Étudiante",1]],t:["Travail","Infirmière","Aide-soignante","Commerçante","Restauration","Bureau","Étudiante","Prof","Coiffeuse","Esthéticienne","Indépendante","Retraitée","Maman au foyer","Saisonnière"]},
   {k:"papote",q:"Elle aime papoter ?",r:[["Oui","Bavarde"],["Plutôt calme","Discrète"]],t:["Bavarde","Aime papoter","Discrète"]},
   {k:"sport",q:"Elle fait du sport ?",r:[["Oui","Sportive",1],["Non",""]],t:["Sportive","Danse","Équitation","Randonnée"]},
   {k:"voyage",q:"Elle part bientôt en voyage ?",r:[["Oui","Voyage bientôt",1],["Non",""]],t:["Voyage bientôt"]},
@@ -1906,6 +1925,35 @@ function montEtiq(sh,id,loc){const box=sh.querySelector("#etiq");if(!box)return;
     const inp=box.querySelector("#etD");if(inp)inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ok.click()}};
   }
   dessine()}
+// Notes de la création de fiche (C2) : une question par ligne, la réponse à droite d'un toucher, le détail juste dessous.
+// Les réponses deviennent les mêmes étiquettes que dans les Notes de la fiche (« Non » est retenu dans reponses).
+const NOTES_C2=[
+  {k:"couple",q:"En couple ?",ic:"deux",o:[["Oui","En couple","Son prénom"],["Non","Célibataire"]]},
+  {k:"enfants",q:"Des enfants ?",ic:"enfant",o:[["Oui","Enfants","Leurs prénoms"],["Non",""]]},
+  {k:"animal",q:"Animal ?",ic:"patte",o:[["Chien","Chien","Son nom, sa race"],["Chat","Chat","Son nom"],["Non",""]]},
+  {k:"metier",q:"Son travail",ic:"travail",texte:"Travail",ph:"Ex. : boulangerie"},
+  {k:"voyage",q:"En vacances bientôt ?",ic:"soleil",o:[["Oui","Voyage bientôt","Où ?"],["Non",""]]},
+  {k:"papote",q:"Elle aime papoter ?",ic:"point",o:[["Oui","Bavarde"],["Calme","Discrète"]]},
+  {k:"sport",q:"Du sport ?",ic:"point",o:[["Oui","Sportive","Lequel ?"],["Non",""]]},
+  {k:"ongles",q:"Ses ongles",ic:"point",o:[["Courts","Ongles courts"],["Longs","Ongles longs"]]},
+  {k:"forme",q:"Sa forme",ic:"point",o:[["Amande","Forme amande"],["Carré","Forme carrée"],["Rond","Forme ronde"]]},
+  {k:"heure",q:"À l'heure ?",ic:"point",o:[["Oui","Toujours à l'heure"],["En retard","Toujours en retard"]]}];
+function montNotesC2(sh,c){const box=sh.querySelector("#etiq");if(!box)return;
+  c.etiquettes=(c.etiquettes||[]).map(e=>({...e}));c.reponses={...(c.reponses||{})};
+  const trouve=t=>c.etiquettes.find(e=>e.t===t);
+  const choix=r=>{const i=r.o.findIndex(([,t])=>t&&trouve(t));return i>=0?i:c.reponses[r.k]==="non"?r.o.findIndex(([,t])=>!t):-1};
+  function choisir(ri,i){const r=NOTES_C2[ri],avant=choix(r);c.etiquettes=c.etiquettes.filter(e=>!r.o.some(([,t])=>t&&t===e.t));delete c.reponses[r.k];
+    if(i!==avant){const t=r.o[i][1];if(t)c.etiquettes.push({t,d:""});else c.reponses[r.k]="non"}
+    dessine();if(i!==avant&&r.o[i][2])box.querySelector(`[data-det="${ri}"]`)?.focus()}
+  function dessine(){box.innerHTML=`<div class="c2">${NOTES_C2.map((r,ri)=>{
+      if(r.texte){const e=trouve(r.texte);return `<div class="c2l"><i>${ICO[r.ic]}</i><span class="q">${esc(r.q)}</span><input class="c2t" data-txt="${ri}" value="${esc(e?.d||"")}" placeholder="${esc(r.ph)}" autocomplete="off"></div>`}
+      const ch=choix(r),opt=ch>=0?r.o[ch]:null,e=opt&&opt[1]?trouve(opt[1]):null;
+      return `<div class="c2l"><i>${ICO[r.ic]}</i><span class="q">${esc(r.q)}</span><span class="c2s">${r.o.map(([lab],i)=>`<button type="button" class="${i===ch?"on":""}" data-r="${ri}" data-i="${i}">${esc(lab)}</button>`).join("")}</span></div>`+
+        (opt&&opt[2]?`<div class="c2d"><input data-det="${ri}" value="${esc(e?.d||"")}" placeholder="${esc(opt[2])}" autocomplete="off"></div>`:"")}).join("")}</div>`;
+    box.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>choisir(+b.dataset.r,+b.dataset.i));
+    box.querySelectorAll("[data-det]").forEach(inp=>inp.oninput=()=>{const r=NOTES_C2[+inp.dataset.det],e=trouve(r.o[choix(r)][1]);if(e)e.d=inp.value.trim()});
+    box.querySelectorAll("[data-txt]").forEach(inp=>inp.oninput=()=>{const r=NOTES_C2[+inp.dataset.txt],v=inp.value.trim();c.etiquettes=c.etiquettes.filter(e=>e.t!==r.texte);if(v)c.etiquettes.push({t:r.texte,d:v})})}
+  dessine()}
 // Prochain rendez-vous de la cliente (plus tard aujourd'hui compris), sans les créneaux perso
 function rdvsAVenir(id){const n=new Date(),t=iso(n),h=hhmm(n.getHours()*60+n.getMinutes());
   return S.rdvs.filter(r=>r.clientId===id&&!r.perso&&r.statut!=="annule"&&r.statut!=="lapin"&&(r.date>t||(r.date===t&&r.heure>=h))).sort((a,b)=>(a.date+a.heure).localeCompare(b.date+b.heure))}
@@ -1923,7 +1971,7 @@ function openFiche(id,vue){
   openSheet(`
     <div class="sheet-h"><span></span></div>
     <div class="ficheTop">
-      <div style="min-width:0;flex:1;align-self:center"><div class="fnomrow"><button type="button" class="fnom" data-champ="nom">${isAbo(c)?`<span class="ccour fc">${COURONNE}</span>`:""}${nomHTML(c)}</button></div>
+      <div style="min-width:0;flex:1;align-self:center"><div class="fnomrow"><button type="button" class="fnom" data-champ="nom">${nomHTML(c)}</button></div>
       </div>
       <div class="ftop-btns">${animaux(c).length?`<button type="button" class="instabtn patte" data-pets aria-label="Ses animaux">${ICO.patte}</button>`:""}${c.insta?`<a class="instabtn" href="${esc(instaURL(c.insta))}" target="_blank" rel="noopener" aria-label="Instagram de ${esc(c.prenom||"la cliente")} (@${esc(instaNom(c.insta))})"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg></a>`:`<button type="button" class="instabtn vide" data-act="editCli" data-id="${id}" aria-label="Ajouter son Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg></button>`}</div></div>
     <div class="ftop-tags">${niveau(c)==="nouvelle"?'<span class="ctag newtag">NEW</span>':""}${c.tel?`<button type="button" class="ctag teltag num" data-act="telMenu" aria-expanded="false">${esc(c.tel)}</button>`:""}${hab?`<span class="ctag habtag">${hab.fois>1?"Sa pose":"Dernière pose"} : <b>${esc(hab.prestation.nom)}</b></span>`:""}${anniv?`<span class="ctag anntag">${GATEAU}${esc(anniv)}</span>`:""}</div>
@@ -2335,7 +2383,7 @@ document.addEventListener("click",e=>{
     write(()=>S.db.doc("clientes/"+id).update({abonnee:v,statut:c.statut}),v?"Ajoutée au Club Dilerna 👑":"Retirée du Club Dilerna");
     // sur place, sans rouvrir la fiche : le carré et la couronne devant le nom
     t.classList.toggle("on",v);t.setAttribute("aria-pressed",String(v));t.innerHTML=`<span>${v?`<span class="ccour">${COURONNE}</span>`:""}Club Dilerna</span><small>${v?"activé":"désactivé"}</small>`;
-    const fn=document.querySelector(".sheet .fnom");if(fn)fn.innerHTML=(v?`<span class="ccour fc">${COURONNE}</span>`:"")+nomHTML(c);render()}
+    const fn=document.querySelector(".sheet .fnom");if(fn)fn.innerHTML=nomHTML(c);render()}
   if(a==="annivMsg")openAnniv(t.dataset.id);
   if(a==="rappels")openRappels();
   if(a==="stock")openStock();
