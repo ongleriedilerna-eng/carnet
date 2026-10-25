@@ -725,6 +725,19 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .smsb{display:inline-block;border-radius:999px;background:var(--choco);color:var(--bg);font-size:12.5px;font-weight:800;padding:7px 15px;text-decoration:none}
 .nonum{border:1.5px dashed #CDBBA2;background:none;border-radius:999px;font-size:11.5px;font-weight:700;color:var(--b2);padding:5px 10px;white-space:nowrap}
 .rmsg{font-size:13px;margin-bottom:12px}
+/* Supprimer : bouton « enfoncé », question au milieu de l'écran */
+.btn.enfonce{background:var(--bg-alt);color:var(--choco);border:0;box-shadow:inset 0 2px 7px rgba(78,46,34,.28)}
+.cmodal{position:fixed;inset:0;z-index:90;background:rgba(20,10,22,.45);display:grid;place-items:center;padding:24px}
+.cbox{background:var(--bg);border-radius:22px;padding:22px 18px 14px;max-width:320px;width:100%;text-align:center;box-shadow:0 24px 50px -16px rgba(33,2,2,.6)}
+.cbox p{margin:0 0 18px;font-size:17px;font-weight:700;line-height:1.3;color:var(--choco)}
+.cbox div{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cbox button{border:0;border-radius:999px;padding:13px 0;font:800 15px var(--body);cursor:pointer}
+.cnon{background:var(--bg-alt);color:var(--choco)}
+.coui{background:var(--choco);color:var(--bg)}
+/* Aujourd'hui : un rond orange vif, impossible à rater */
+.wday.today .n{background:#EE7B22;color:#fff!important;border-radius:999px;min-width:32px;padding:0 6px;font-weight:800}
+.wday.today .l{color:#EE7B22!important;font-weight:800}
+.wcol.ajd{background-color:color-mix(in srgb,#EE7B22 10%,transparent)}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1085,8 +1098,8 @@ try{const t=localStorage.getItem("carnet-tri");if(TRIS.some(([k])=>k===t))S.tri=
 /* ---------- utils ---------- */
 function pad(n){return String(n).padStart(2,"0")}
 function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
-// À l'ouverture : la page du lundi au vendredi ; le samedi et le dimanche, celle de la semaine qui arrive
-function jourDepart(){const d=new Date(),j=d.getDay();if(j===6)d.setDate(d.getDate()+2);else if(j===0)d.setDate(d.getDate()+1);return iso(d)}
+// À l'ouverture : la semaine d'aujourd'hui (le week-end, la page samedi / dimanche)
+function jourDepart(){return iso(new Date())} // la semaine d'aujourd'hui
 function parse(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
 function mondayOf(s){const d=parse(s);const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return iso(d)}
@@ -1217,7 +1230,7 @@ function renderSemaine(){
   h+=`<div class="wgrid" style="grid-template-columns:28px repeat(${IDX.length},minmax(0,1fr))"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
   for(let p=-PAGES;p<=PAGES;p++){const g=moi+p,w0=addDays(ws,Math.floor(g/2)*7),ix=((g%2)+2)%2?[5,6]:[0,1,2,3,4];h+=`<div class="dweek" style="grid-template-columns:repeat(${ix.length},minmax(0,1fr))">`;
   for(const i of ix){const d=addDays(w0,i),n=actifsDe(d).length;
-    h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""} ${d<today?"passe":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":""}</span></button>`}
+    h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""} ${d<today?"passe":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${d===today?"auj.":JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":""}</span></button>`}
   h+=`</div>`}
   h+=`</div></div>`;
   const JW=jourInfo(addDays(ws,1));
@@ -1226,7 +1239,7 @@ function renderSemaine(){
   h+=`</div>`;
   for(const i of IDX){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
-    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
+    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""} ${d===today?"ajd":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
     for(let k=0;k<N;k++){const m=A+k*30,hm=hhmm(m);
       h+=`<button class="wcell ${k%2?"h":""} ${d===today&&ici(m)?"maintenant":""} ${!J.ferme&&J.pDe!=null&&m>=J.pDe&&m<J.pA?"lunch":""} ${!J.ferme&&(m<J.de||m>=J.a)?"hors":""}" style="top:${k*SLOT}px;height:${SLOT}px" data-act="cell" data-d="${d}" data-m="${m}" aria-label="${fDay.format(parse(d))} à ${hm.replace(":","h")}"></button>`}
     const ls=Math.max(J.pDe??0,A),le=Math.min(J.pA??0,B);if(!J.ferme&&le>ls)h+=`<div class="lunchtag" style="top:${(ls-A)/30*SLOT+(le-ls)/60*SLOT-6}px">pause</div>`;
@@ -1575,6 +1588,11 @@ function clientOptions(sel){
     arr.map(c=>`<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(nomC(c))} · ${(STATUTS[c.statut]||STATUTS.nouvelle).label}</option>`).join("");
 }
 
+// Une question au milieu de l'écran, Oui / Non (pour supprimer)
+function confirmer(titre){return new Promise(res=>{const d=document.createElement("div");d.className="cmodal";
+  d.innerHTML=`<div class="cbox" role="alertdialog" aria-modal="true"><p>${esc(titre)}</p><div><button type="button" class="cnon">Non</button><button type="button" class="coui">Oui</button></div></div>`;
+  document.body.appendChild(d);const fin=v=>{d.remove();res(v)};
+  d.querySelector(".cnon").onclick=()=>fin(false);d.querySelector(".coui").onclick=()=>fin(true);d.onclick=e=>{if(e.target===d)fin(false)}})}
 function openRdv(r, preset={}){
   const isNew=!r;
   r = r ? structuredClone(r) : {date:preset.date||S.day, heure:preset.heure||"10:00", duree:preset.duree||60, clientId:preset.clientId||"", prestation:preset.prestation||null, options:preset.options||[], statut:"prevu", note:""};
@@ -1614,7 +1632,7 @@ function openRdv(r, preset={}){
       <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
       <button class="btn ghost" type="button" id="btnMsg">Préparer le message de confirmation</button>
       <div id="msgBox" hidden></div>
-      ${isNew?"":`<button class="btn danger" type="button" id="btnDel">Supprimer ce rendez-vous</button><div id="delBox"></div>`}
+      ${isNew?"":`<button class="btn enfonce" type="button" id="btnDel">Supprimer ce rendez-vous</button>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
     const state={total:r.total??null,opts:allOpts.map(o=>{const cur=(r.options||[]).find(x=>x.nom===o.nom);return cur?{...cur,on:true}:{nom:o.nom,prix:o.prix,offert:false,on:false}}), statut:r.statut||"prevu"};
@@ -1736,9 +1754,8 @@ function openRdv(r, preset={}){
       box.querySelector("#cp")?.addEventListener("click",()=>{navigator.clipboard.writeText(txt).then(()=>toast("Copié ✨"),()=>{const sel=getSelection(),rg=document.createRange();rg.selectNodeContents(box.querySelector("#msgTxt"));sel.removeAllRanges();sel.addRange(rg);toast("Texte sélectionné : fais Copier")})});
       box.querySelector("#cpClose").onclick=()=>{box.hidden=true}};
 
-    if(!isNew){$("#btnDel").onclick=()=>{$("#delBox").innerHTML=`<div class="confirm"><b>Supprimer définitivement ce rendez-vous ?</b><div class="actions"><button type="button" class="btn ghost" id="no">Non</button><button type="button" class="btn" style="background:var(--bad)" id="yes">Supprimer</button></div></div>`;
-      $("#no").onclick=()=>{$("#delBox").innerHTML=""};
-      $("#yes").onclick=async()=>{if(await write(()=>S.db.doc("rdv/"+r.id).delete(),"Rendez-vous supprimé"))closeSheet()}}}
+    if(!isNew)$("#btnDel").onclick=async()=>{if(!await confirmer("Souhaitez-vous vraiment supprimer ce rendez-vous ?"))return;
+      if(await write(()=>S.db.doc("rdv/"+r.id).delete(),"Rendez-vous supprimé"))closeSheet()};
 
     $("#fRdv").onsubmit=async e=>{e.preventDefault();const b=build();
       if(!b.clientId){toast("Choisis une cliente dans la liste, ou appuie sur + Cliente");return}
@@ -1784,7 +1801,7 @@ function openClient(c,apres,prenom0){
       </div>
       <div id="cNotesBox" hidden><div id="etiq"></div></div>
       <button class="btn" type="submit">${isNew?"Créer la fiche":"Enregistrer"}</button>
-      ${isNew?"":`<button class="btn danger" type="button" id="btnDelC">Supprimer la cliente</button><div id="delC"></div>`}
+      ${isNew?"":`<button class="btn enfonce" type="button" id="btnDelC">Supprimer la cliente</button>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
     requestAnimationFrame(()=>{sheet.style.height=sheet.offsetHeight+"px"}); // la feuille garde sa hauteur : Fiche et Notes au même endroit
@@ -1793,8 +1810,8 @@ function openClient(c,apres,prenom0){
     let notesMontees=false;
     $("#cRond").onclick=()=>{const v=$("#cNotesBox").hidden;$("#cNotesBox").hidden=!v;$("#cChamps").hidden=v;$("#cRond").classList.toggle("on",v);$("#cRond").setAttribute("aria-pressed",v);
       if(v&&!notesMontees){notesMontees=true;montNotesC2(sheet,c)}};
-    if(!isNew)$("#btnDelC").onclick=()=>{$("#delC").innerHTML=`<div class="confirm"><b>Supprimer ${esc(nomC(c))} ?</b><span style="font-size:13px">Ses rendez-vous resteront dans l'agenda sous « Cliente supprimée ».</span><div class="actions"><button type="button" class="btn ghost" id="no">Non</button><button type="button" class="btn" style="background:var(--bad)" id="yes">Supprimer</button></div></div>`;
-      $("#no").onclick=()=>{$("#delC").innerHTML=""};$("#yes").onclick=async()=>{if(await write(()=>S.db.doc("clientes/"+c.id).delete(),"Fiche supprimée"))closeSheet()}};
+    if(!isNew)$("#btnDelC").onclick=async()=>{if(!await confirmer(`Souhaitez-vous vraiment supprimer ${nomC(c)} ? Ses rendez-vous resteront dans l'agenda.`))return;
+      if(await write(()=>S.db.doc("clientes/"+c.id).delete(),"Fiche supprimée"))closeSheet()};
     $("#fCli").onsubmit=async e=>{e.preventDefault();
       const body={prenom:$("#cPrenom").value.trim(),nom:$("#cNom").value.trim(),tel:$("#cTel").value.trim(),insta:$("#cInsta").value.trim(),abonnee:$("#cAbo").checked,statut:$("#cAbo").checked?"abonnee":"",
         allergies:[...[...sheet.querySelectorAll("#allPick button.on")].map(b=>b.dataset.al),$("#cAllAutre").value.trim()].filter(Boolean).join(" · "),notes:c.notes||"",anniv:($("#cAnJ").value&&$("#cAnM").value)?$("#cAnM").value+"-"+$("#cAnJ").value:"",annee:Number($("#cAnA").value)||null,annivEnvoye:c.annivEnvoye||null,etiquettes:c.etiquettes||[],aPenser:c.aPenser||[],parrain:c.parrain||"",parlerDe:c.parlerDe||"",reponses:c.reponses||{},creeLe:c.creeLe||iso(new Date())};
