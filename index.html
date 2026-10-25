@@ -1858,17 +1858,18 @@ function rappelBar(){const l=rdvDemain(),reste=l.filter(r=>!r.rappel).length;if(
 function rappelTexte(r){const c=S.clients.get(r.clientId),f=new Intl.DateTimeFormat("fr-FR",{weekday:"long",day:"numeric",month:"long"});
   const v={prenom:c?.prenom||"",jour:f.format(parse(r.date)),heure:r.heure.replace(/^0/,"").replace(":","h"),prestation:r.prestation?.nom||"ta prestation",signature:S.catalogue.signature||""};
   return (S.catalogue.rappel||DEFAULT_CATALOGUE.rappel).replace(/\{(prenom|jour|heure|prestation|signature)\}/g,(_,k)=>v[k]).trim()}
-// Rappels de demain (E2) : un bouton « SMS » par cliente ; Messages s'ouvre avec son numéro et le texte déjà écrit,
+// Rappels de demain (E2) : un bouton « SMS » par cliente (ou « Instagram » si on n'a que son Instagram) ; Messages s'ouvre avec son numéro et le texte déjà écrit,
 // il n'y a plus qu'à toucher Envoyer. Gratuit : ça part du téléphone, avec le forfait. Une fois touché, le rdv est noté « rappel envoyé ».
 function openRappels(){
   const d=addDays(iso(new Date()),1),l=rdvDemain();
   const ligne=r=>{const c=S.clients.get(r.clientId),tel=c?.tel?telIntl(c.tel):"";
     const droite=r.rappel?`<span class="ok">Envoyé</span>`
       :tel?`<a class="smsb" data-sms="${r.id}" href="sms:${esc(tel)}?&body=${encodeURIComponent(rappelTexte(r))}">SMS</a>`
+      :c?.insta?`<a class="smsb" data-sms="${r.id}" data-igtxt="${encodeURIComponent(rappelTexte(r))}" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener">Instagram</a>`
       :`<button type="button" class="nonum" data-act="editCli" data-id="${c.id}">Ajouter son numéro</button>`;
     return `<div class="rli" data-r="${r.id}"><span class="av">${esc(initials(c))}</span><span class="rn"><b>${esc(nomC(c))}</b><small>${r.heure.replace(/^0/,"").replace(":","h")} · ${esc(r.prestation?.nom||"")}</small></span><span class="re">${droite}</span></div>`};
   openSheet(`<div class="sheet-h"><h3>Rappels de demain</h3></div>
-    <p class="rq">${l.length?`<b>${l.length} rendez-vous</b> demain, ${fDay.format(parse(d))}. Touche « SMS » : le message est déjà écrit avec son heure, tu n'as plus qu'à envoyer.`:"Pas de rendez-vous demain."}</p>
+    <p class="rq">${l.length?`<b>${l.length} rendez-vous</b> demain, ${fDay.format(parse(d))}. Touche « SMS » ou « Instagram » : le message est déjà écrit avec son heure, tu n'as plus qu'à envoyer.`:"Pas de rendez-vous demain."}</p>
     ${l.length?`<div class="label" style="margin-bottom:4px">Le message</div><div class="msg rmsg">${esc(rappelTexte(l[0]))}</div>`:""}
     <div class="rl">${l.map(ligne).join("")}</div>
     ${l.length?`<p class="rpied">Gratuit : les SMS partent de ton téléphone, avec ton forfait.</p>`:""}`,sheet=>{
