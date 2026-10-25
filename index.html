@@ -131,12 +131,14 @@ h2.sec{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.1
 .coach{border-left:3px solid var(--accent);padding:10px 14px;background:var(--accent-soft);border-radius:0 12px 12px 0;font-size:14px;margin-top:10px}
 
 /* Onglets */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
-nav.tabs button{border:0;background:none;padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted)}
-nav.tabs button svg{width:24px;height:24px}
-nav.tabs button.on{color:var(--accent)}
-nav.tabs{box-shadow:0 -10px 30px -20px rgba(78,46,34,.4)}
+/* La barre Agenda / Clientes / Bilan : une pilule transparente qui flotte au-dessus du planning */
+nav.tabs{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:25;border-radius:999px;padding:5px;
+  background:rgba(255,250,245,.6);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 14px 30px -14px rgba(78,46,34,.55),inset 0 1px 0 rgba(255,255,255,.8)}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+nav.tabs button{border:0;background:none;border-radius:999px;padding:7px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted)}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button.on{background:rgba(78,46,34,.9);color:var(--bg)}
 .fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:26;width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-size:30px;line-height:1;box-shadow:0 10px 24px -8px rgba(109,31,46,.7)}
 
 /* Feuilles (modales) */
@@ -897,7 +899,7 @@ i.doux{font-size:12px;margin:0}
   /* transform : les éléments fixes (onglets, +, fenêtres) restent dans l'écran du téléphone */
   .appscroll{position:absolute;left:0;top:54px;width:393px;height:798px;overflow-y:auto;overflow-x:hidden;transform:translateZ(0);background:var(--bg);scrollbar-width:none}
   .appscroll::-webkit-scrollbar{display:none}
-  .appscroll nav.tabs,.screen>nav.tabs{padding-bottom:18px}
+  .appscroll nav.tabs,.screen>nav.tabs{padding-bottom:5px;bottom:24px}
   /* la barre Agenda / Clientes / Bilan est posée sur l'écran : elle ne défile plus avec la page */
   .screen>nav.tabs{position:absolute}
   .screen:has(#layer:not(:empty))>nav.tabs{display:none}
@@ -1101,37 +1103,38 @@ function jourInfo(d){const i=(parse(d).getDay()+6)%7,h=horaires()[i]||{},v=enVac
   return {ferme:!!v||!h.ouvert,raison:v?"Vacances":(!h.ouvert?"Fermé":""),de:mins(h.de||"09:00"),a:mins(h.a||"19:00"),pDe:h.pDe&&h.pA?mins(h.pDe):null,pA:h.pDe&&h.pA?mins(h.pA):null}}
 const hTxt=v=>{const [h,m]=String(v||"").split(":");return +h+"h"+(m&&m!=="00"?m:"")};
 function renderSemaine(){
-  const today=iso(new Date()), ws=mondayOf(S.day), we=addDays(ws,6);
-  const sameM=ws.slice(0,7)===we.slice(0,7);
+  // S3 : du lundi au vendredi, puis samedi et dimanche en glissant (les cases sont plus grandes)
+  const today=iso(new Date()), ws=mondayOf(S.day), moi=demiDe(S.day), IDX=moi?[5,6]:[0,1,2,3,4], d0=addDays(ws,IDX[0]), we=addDays(ws,IDX[IDX.length-1]);
+  const sameM=d0.slice(0,7)===we.slice(0,7);
   const mL=new Intl.DateTimeFormat("fr-FR",{month:"long"}), mS=new Intl.DateTimeFormat("fr-FR",{month:"short"});
-  const titre=(sameM?cap(mL.format(parse(we))):cap(mS.format(parse(ws)).replace(".",""))+" – "+mS.format(parse(we)).replace(".",""))+`<span class="yr num">${parse(we).getFullYear()}</span>`;
-  const plg=sameM?`du ${parse(ws).getDate()} au ${parse(we).getDate()} ${mL.format(parse(we))}`:`du ${parse(ws).getDate()} ${mL.format(parse(ws))} au ${parse(we).getDate()} ${mL.format(parse(we))}`;
+  const titre=(sameM?cap(mL.format(parse(we))):cap(mS.format(parse(d0)).replace(".",""))+" – "+mS.format(parse(we)).replace(".",""))+`<span class="yr num">${parse(we).getFullYear()}</span>`;
+  const plg=sameM?`du ${parse(d0).getDate()} au ${parse(we).getDate()} ${mL.format(parse(we))}`:`du ${parse(d0).getDate()} ${mL.format(parse(d0))} au ${parse(we).getDate()} ${mL.format(parse(we))}`;
   const [A,B]=plage(), N=(B-A)/30;
   // combien de rdv dans chaque demi-journée, pour ne jamais en rater un
   const actifsDe=d=>rdvsOf(d).filter(r=>r.statut!=="annule"&&!r.perso);
   const estMatin=r=>mins(r.heure)<13*60, estAprem=r=>mins(r.heure)+(Number(r.duree)||60)>13*60;
   let nM=0,nA=0;for(let i=0;i<7;i++)for(const r of actifsDe(addDays(ws,i))){if(estMatin(r))nM++;if(estAprem(r))nA++}
   const cnt=n=>n?`<span class="cnt num">${n}</span>`:"";
-  let h=`<div class="wkhead"><button class="iconbtn" data-act="wstep" data-n="-7" aria-label="Semaine précédente">‹</button>
+  let h=`<div class="wkhead"><button class="iconbtn" data-act="wstep" data-n="-1" aria-label="Jours d'avant">‹</button>
     <button type="button" class="mlabel" data-act="mois" aria-label="Voir tout le mois"><b>${titre}<span class="mfleche">▾</span></b><small class="num">${plg}</small></button>
-    <button class="iconbtn" data-act="wstep" data-n="7" aria-label="Semaine suivante">›</button></div>
+    <button class="iconbtn" data-act="wstep" data-n="1" aria-label="Jours d'après">›</button></div>
 `;
   // anniversaires du jour et rappels de demain : rangés dans la clochette « À faire » en haut à droite
   const nowD=new Date(),nowM=nowD.getHours()*60+nowD.getMinutes(),ici=t=>nowM>=t&&nowM<t+30; // la demi-heure où on est
   h+=`<div class="wview" id="wview"><div class="${S.wanim||""}">`;
   // bande des jours : on la fait glisser au doigt pour voir les semaines d'avant et d'après (8 de chaque côté)
   const PAGES=8;
-  h+=`<div class="wgrid"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
-  for(let p=-PAGES;p<=PAGES;p++){const w0=addDays(ws,p*7);h+=`<div class="dweek">`;
-  for(let i=0;i<7;i++){const d=addDays(w0,i),n=actifsDe(d).length;
+  h+=`<div class="wgrid" style="grid-template-columns:28px repeat(${IDX.length},minmax(0,1fr))"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
+  for(let p=-PAGES;p<=PAGES;p++){const g=moi+p,w0=addDays(ws,Math.floor(g/2)*7),ix=((g%2)+2)%2?[5,6]:[0,1,2,3,4];h+=`<div class="dweek" style="grid-template-columns:repeat(${ix.length},minmax(0,1fr))">`;
+  for(const i of ix){const d=addDays(w0,i),n=actifsDe(d).length;
     h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":""}</span></button>`}
   h+=`</div>`}
   h+=`</div></div>`;
   const JW=jourInfo(addDays(ws,1));
-  h+=`<div class="wgrid" id="wbody" data-a="${A}" style="--s:${SLOT}px;height:${N*SLOT}px;margin-top:4px"><div class="wtimes">`;
-  for(let k=0;k<N;k++){const m=A+k*30;h+=`<span class="num ${m%60?"":"full"} ${ws<=today&&today<=addDays(ws,6)&&ici(m)?"maint":""} ${JW.pDe!=null&&m>=JW.pDe&&m<JW.pA?"lunch":""}" style="top:${k*SLOT}px">${m%60?"30":Math.floor(m/60)+"H"}</span>`}
+  h+=`<div class="wgrid" id="wbody" data-a="${A}" style="grid-template-columns:28px repeat(${IDX.length},minmax(0,1fr));--s:${SLOT}px;height:${N*SLOT}px;margin-top:4px"><div class="wtimes">`;
+  for(let k=0;k<N;k++){const m=A+k*30;h+=`<span class="num ${m%60?"":"full"} ${IDX.some(i=>addDays(ws,i)===today)&&ici(m)?"maint":""} ${JW.pDe!=null&&m>=JW.pDe&&m<JW.pA?"lunch":""}" style="top:${k*SLOT}px">${m%60?"30":Math.floor(m/60)+"H"}</span>`}
   h+=`</div>`;
-  for(let i=0;i<7;i++){
+  for(const i of IDX){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
     h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
     for(let k=0;k<N;k++){const m=A+k*30,hm=hhmm(m);
@@ -1622,8 +1625,8 @@ function confirmMsg(r,c){
 const ALLERGIES=["Cuticules sensibles","Eczéma","Ongles fragiles","Ongles dédoublés"];
 const GOUTTE=`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8C6 4.6 3.8 7 3.8 9.6a4.2 4.2 0 0 0 8.4 0C12.2 7 10 4.6 8 1.8Z" fill="currentColor"/></svg>`;
 const allergiesListe=v=>String(v||"").split(/\s*·\s*|\s*,\s*/).map(x=>x.trim()).filter(Boolean);
-function openClient(c){
-  const isNew=!c; c=c?{...c}:{prenom:"",nom:"",tel:"",insta:"",statut:"nouvelle",notes:"",allergies:""};
+function openClient(c,apres,prenom0){
+  const isNew=!c; c=c?{...c}:{prenom:prenom0||"",nom:"",tel:"",insta:"",statut:"nouvelle",notes:"",allergies:""};
   openSheet(`
     <div class="sheet-h"><h3>${isNew?"Nouvelle cliente":"Modifier la fiche"}</h3><button type="button" class="rondnote" id="cRond" aria-label="Ses notes" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3.5" width="14" height="17" rx="3"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></button></div>
     <form class="f" id="fCli">
@@ -1656,7 +1659,7 @@ function openClient(c){
         allergies:[...[...sheet.querySelectorAll("#allPick button.on")].map(b=>b.dataset.al),$("#cAllAutre").value.trim()].filter(Boolean).join(" · "),notes:c.notes||"",anniv:($("#cAnJ").value&&$("#cAnM").value)?$("#cAnM").value+"-"+$("#cAnJ").value:"",annee:Number($("#cAnA").value)||null,annivEnvoye:c.annivEnvoye||null,etiquettes:c.etiquettes||[],aPenser:c.aPenser||[],parrain:c.parrain||"",parlerDe:c.parlerDe||"",reponses:c.reponses||{},creeLe:c.creeLe||iso(new Date())};
       if(c.exemple)body.exemple=true;
       const ref=isNew?S.db?.collection("clientes").doc():S.db?.doc("clientes/"+c.id);
-      if(await write(()=>ref.set(body),isNew?"Cliente ajoutée":"Fiche enregistrée")){closeSheet();const nid=isNew?ref.id:c.id;if(!S.clients.has(nid))S.clients.set(nid,{id:nid,...body});if(!isNew)openFiche(nid)}};
+      if(await write(()=>ref.set(body),isNew?"Cliente ajoutée":"Fiche enregistrée")){closeSheet();const nid=isNew?ref.id:c.id;if(!S.clients.has(nid))S.clients.set(nid,{id:nid,...body});if(isNew&&apres)apres(nid);else if(!isNew)openFiche(nid)}};
   });
 }
 
@@ -2157,7 +2160,7 @@ function clienteProbable(){
   return null;
 }
 // Nouveau rdv sur une case : la cliente du moment est déjà choisie, sa prestation habituelle en grand, les autres en tuiles
-function openBulle(date,heure,anchor){
+function openBulle(date,heure,anchor,pre){
   closeSheet();
   const cp=clienteProbable();
   const B=S.bulle={date,heure,clientId:"",nouv:null,q:"",prest:null,habit:null,ici:cp?.id||null,etiq:cp?.etiq||""};
@@ -2231,7 +2234,9 @@ function openBulle(date,heure,anchor){
     if(a==="fiche"){if(B.clientId)openFiche(B.clientId);return}
     if(a==="close"){closeSheet();return}
     if(a==="cli"){pick(b.dataset.id);return}
-    if(a==="new"){B.clientId="";B.nouv={prenom:B.q.trim(),tel:""};B.habit=null;if(!B.manuel)B.prest=null;draw();setTimeout(()=>$(B.nouv.prenom?"#bTel":"#bPrenom")?.focus(),0);return}
+    if(a==="new"){const q=B.q.trim();closeSheet();
+      openClient(null,id=>{render();const cel=document.querySelector(`.wcell[data-d="${date}"][data-m="${mins(heure)}"]`)||document.querySelector(`.drow[data-h="${heure}"]`);
+        if(cel)openBulle(date,heure,cel,id);else toast("Cliente ajoutée")},q);return}
     if(a==="chg"){B.clientId="";B.nouv=null;B.habit=null;if(!B.manuel)B.prest=null;B.q="";draw();setTimeout(()=>$("#bQ")?.focus(),0);return}
     if(a==="perso"){B.perso=true;B.persoDur=B.persoDur||60;draw();return}
     if(a==="cliente"){B.perso=false;draw();return}
@@ -2257,7 +2262,7 @@ function openBulle(date,heure,anchor){
       if(ok){closeSheet();render()}else b.disabled=false;
     }
   });
-  if(B.ici)pick(B.ici);else{draw();if(matchMedia("(hover:hover)").matches)setTimeout(()=>$("#bQ")?.focus(),0)}
+  if(pre)pick(pre);else if(B.ici)pick(B.ici);else{draw();if(matchMedia("(hover:hover)").matches)setTimeout(()=>$("#bQ")?.focus(),0)}
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&L.innerHTML)closeSheet()});
 // Fermer une feuille en la faisant glisser vers le bas, au doigt ou à la souris
@@ -2337,7 +2342,7 @@ document.addEventListener("click",e=>{
 function centrerJours(){const s=document.getElementById("dscroll");if(!s)return;S.joursLock=true;s.scrollLeft=s.clientWidth*(+s.dataset.pages);setTimeout(()=>{S.joursLock=false},60)}
 document.addEventListener("scroll",e=>{const s=e.target;if(!s||s.id!=="dscroll"||S.joursLock)return;
   clearTimeout(S.joursT);S.joursT=setTimeout(()=>{const p=Math.round(s.scrollLeft/s.clientWidth)-(+s.dataset.pages);
-    if(p){S.day=addDays(S.day,p*7);S.cal=S.day.slice(0,7);S.wanim="";render()}},160)},true);
+    if(p)demiPas(p,"")},160)},true);
 function fitWeek(){const g=document.getElementById("wbody"),nav=document.querySelector("nav.tabs");if(!g||!nav)return;
   const r=g.getBoundingClientRect(),k=r.height/g.offsetHeight||1;
   avail=(nav.getBoundingClientRect().top-r.top)/k-6;
@@ -2350,7 +2355,11 @@ function fitWeek(){const g=document.getElementById("wbody"),nav=document.querySe
     while(el.scrollWidth>el.clientWidth+1&&f>8.5){f-=.5;el.style.fontSize=f+"px"}
     if(el.scrollWidth>el.clientWidth+1){el.style.whiteSpace="normal";el.style.overflowWrap="anywhere"}}}
 addEventListener("resize",()=>{if(S.tab==="agenda")fitWeek()});
-function weekStep(n){S.sel=null;S.day=addDays(S.day,n);if(parse(S.day).getDay()===0)S.day=addDays(S.day,1);S.wanim=n>0?"wanim-l":"wanim-r";render()}
+function weekStep(n){S.sel=null;demiPas(n>0?1:-1,n>0?"wanim-l":"wanim-r")}
+// S3 : 0 = du lundi au vendredi, 1 = samedi et dimanche ; on avance d'une moitié de semaine à la fois
+function demiDe(d){return (parse(d).getDay()+6)%7>=5?1:0}
+function demiPas(p,anim){const g=demiDe(S.day)+p,w0=addDays(mondayOf(S.day),Math.floor(g/2)*7),moitie=((g%2)+2)%2,today=iso(new Date());
+  const d=addDays(w0,moitie?5:0),fin=addDays(w0,moitie?6:4);S.day=today>=d&&today<=fin?today:d;S.cal=S.day.slice(0,7);S.wanim=anim;render()}
 /* Glisser un rendez-vous : doigt appuyé ~0,3 s, puis on glisse */
 let dg=null;
 document.addEventListener("pointerdown",e=>{
