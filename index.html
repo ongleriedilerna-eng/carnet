@@ -688,6 +688,15 @@ button.wday:active{background:var(--accent-soft)}
 .total .modif{display:block;font-size:11px;opacity:.75;margin-top:2px}
 .total input{width:110px;border:0;border-radius:10px;padding:6px 8px;font:700 22px/1 var(--body);color:var(--choco);background:var(--bg)}
 a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800;color:var(--choco);text-decoration:none;white-space:nowrap}
+/* Glisser pour finir le rendez-vous */
+.glisse{position:relative;height:58px;border-radius:999px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14.5px;color:var(--b2);touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
+.glisse span{padding-left:40px;pointer-events:none}
+.glisse i{position:absolute;left:5px;top:5px;width:48px;height:48px;border-radius:50%;background:var(--choco);color:var(--bg);display:grid;place-items:center;font-style:normal;font-size:22px;font-weight:800;cursor:grab;touch-action:none}
+.stpills{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.stpills button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 14px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--choco)}
+.stpills button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
+.plusElle{margin-top:12px}
+.plusElle .fedit{margin-top:8px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1571,11 +1580,7 @@ function openRdv(r, preset={}){
       <div class="fld" hidden><label>Options</label><div class="opts" id="opts">${optsHtml}</div></div>
       <div class="total" id="totBox" role="button" aria-label="Changer le montant"><span><small>Total annoncé à la cliente · touche pour changer</small><b class="num" id="tot">0 €</b><small class="modif" id="totModif" hidden>montant changé à la main</small></span><span id="offTxt" style="font-size:13px;text-align:right"></span></div>
       <input type="hidden" id="rNote" value="${esc(r.note||"")}">
-      ${isNew?"":`<div class="fld"><label>Statut</label><div class="seg" id="seg">
-        ${[["prevu","Prévu","var(--choco)"],["fait","Fait","var(--ok)"],["lapin","Lapin","var(--bad)"],["annule","Annulé","var(--muted)"]].map(([k,l,c])=>`<button type="button" data-st="${k}" style="--c:${c}" class="${(r.statut||"prevu")===k?"on":""}">${l}</button>`).join("")}
-      </div></div>
-      `}
-      ${isNew?"":`<div id="paie"></div>`}
+      ${isNew?"":`<div id="paie"></div><div class="plusElle" id="plusElle"></div>`}
       <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
       <button class="btn ghost" type="button" id="btnMsg">Préparer le message de confirmation</button>
       <div id="msgBox" hidden></div>
@@ -1588,7 +1593,7 @@ function openRdv(r, preset={}){
     function build(){return {...r,clientId:$("#rClient").value,date:$("#rDate").value,heure:$("#rHeure").value,duree:Number($("#rDuree").value)||60,
       prestation:prest(),options:state.opts.filter(o=>o.on).map(({nom,prix,offert})=>({nom,prix,offert:!!offert})),statut:state.statut,note:$("#rNote").value.trim(),total:state.total}}
     function upd(){const b=build();
-      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;if(!r.paye&&$("#btnFini"))$("#btnFini").textContent=`✓ Rendez-vous fini · ${eur(totalRdv(b))} en espèces`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
+      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;const gs=$("#glisse span");if(gs)gs.textContent=`Glisse : fini · ${eur(totalRdv(b))}`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
     const norm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     function lastOf(id){const t=iso(new Date());const l=S.rdvs.filter(x=>x.clientId===id&&x.id!==r.id&&x.statut!=="annule"&&x.prestation).sort((a,b)=>(b.date+b.heure).localeCompare(a.date+a.heure));return l.find(x=>x.date<=t)||l[0]}
     function applyLast(l){
@@ -1633,14 +1638,32 @@ function openRdv(r, preset={}){
     // Encaisser : un geste par moyen de paiement ; le rdv passe en « Fait » et le montant est gardé pour le Bilan
     // « Rendez-vous fini » : un seul geste, encaissé en espèces, le rdv passe en « Fait » et le montant va dans le Bilan
     function dessinePaie(){const p=$("#paie");if(!p)return;
-      p.innerHTML=r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
-        :`<button type="button" class="btn fini" id="btnFini">✓ Rendez-vous fini · ${eur(totalRdv(build()))} en espèces</button>`;
-      const fb=$("#btnFini");if(fb)fb.onclick=async()=>{const b=build(),montant=totalRdv(b),paye={mode:"Espèces",montant,le:iso(new Date())};
-        if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait",total:b.total}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;state.statut="fait";
-          sheet.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x.dataset.st==="fait"));closeSheet();render()}};
+      p.innerHTML=(r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
+        :`<div class="glisse" id="glisse"><i id="gK" aria-label="Glisser pour finir">›</i><span>Glisse : fini · ${eur(totalRdv(build()))}</span></div>`)
+        +`<div class="stpills">${[["lapin","Lapin"],["annule","Annulé"]].map(([k,l])=>`<button type="button" data-stp="${k}" class="${state.statut===k?"on":""}">${l}</button>`).join("")}</div>`;
+      async function finir(){const b=build(),montant=totalRdv(b),paye={mode:"Espèces",montant,le:iso(new Date())};
+        if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait",total:b.total}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;state.statut="fait";closeSheet();render()}else dessinePaie()}
+      // le rond se fait glisser jusqu'au bout ; lâché avant, il revient
+      const g=$("#glisse"),k=$("#gK");if(g&&k){let x0=null,dx=0;const max=()=>g.clientWidth-k.offsetWidth-10;
+        k.onpointerdown=e=>{x0=e.clientX;dx=0;k.setPointerCapture(e.pointerId);k.style.transition="none"};
+        k.onpointermove=e=>{if(x0==null)return;dx=Math.max(0,Math.min(max(),e.clientX-x0));k.style.transform=`translateX(${dx}px)`};
+        k.onpointerup=k.onpointercancel=()=>{if(x0==null)return;x0=null;k.style.transition="transform .2s";
+          if(dx>=max()*.85){k.style.transform=`translateX(${max()}px)`;finir()}else{k.style.transform="";dx=0}}}
+      // LAPIN / ANNULÉ : un toucher l'enregistre, un second le retire
+      p.querySelectorAll("[data-stp]").forEach(b=>b.onclick=async()=>{const nv=state.statut===b.dataset.stp?"prevu":b.dataset.stp;
+        if(await write(()=>S.db.doc("rdv/"+r.id).update({statut:nv}),nv==="lapin"?"Noté : lapin":nv==="annule"?"Rendez-vous annulé":"Remis en prévu")){state.statut=nv;r.statut=nv;dessinePaie();render()}});
       const x=$("#paieX");if(x)x.onclick=async()=>{if(await write(()=>S.db.doc("rdv/"+r.id).update({paye:null}),"Paiement annulé")){r.paye=null;dessinePaie()}};
     }
     if(!isNew)dessinePaie();
+    // « + Une chose en plus sur elle » : elle a raconté quelque chose ? ça va directement dans ses notes
+    const pe=$("#plusElle");if(pe&&r.clientId&&S.clients.has(r.clientId)){let ouvert=false;
+      const dessinePE=()=>{pe.innerHTML=ouvert?`<div class="fedit"><input class="bnote" id="peIn" placeholder="Ex. : elle part au Japon en mars" autocomplete="off"><span><button type="button" class="btn" id="peOk" style="width:auto;min-height:40px;padding:8px 16px">Ajouter</button></span></div>`
+        :`<button type="button" class="sajout" id="peBtn">+ Une chose en plus sur elle</button>`;
+        pe.querySelector("#peBtn")?.addEventListener("click",()=>{ouvert=true;dessinePE();pe.querySelector("#peIn").focus()});
+        const ok=pe.querySelector("#peOk");if(ok){const inp=pe.querySelector("#peIn");inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ok.click()}};
+          ok.onclick=async()=>{const v=inp.value.trim();if(!v)return;const c=S.clients.get(r.clientId),l=[...(c.etiquettes||[]),{t:v,d:""}];
+            if(await write(()=>S.db.doc("clientes/"+r.clientId).update({etiquettes:l}),"Ajouté à ses notes ✨")){c.etiquettes=l;ouvert=false;dessinePE()}}}};
+      dessinePE()}
     // le total se change à la main (nail art en plus…) ; vide = on revient au prix des prestations
     $("#totBox").onclick=e=>{if(e.target.tagName==="INPUT")return;const b=build(),t=$("#tot");
       t.innerHTML=`<input type="number" inputmode="decimal" id="totIn" value="${totalRdv(b)}">`;const i=$("#totIn");i.focus();i.select();
@@ -2356,7 +2379,7 @@ function openBulle(date,heure,anchor,pre){
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&L.innerHTML)closeSheet()});
 // Fermer une feuille en la faisant glisser vers le bas, au doigt ou à la souris
 let gl=null;
-function glDebut(t,x,y){const sh=t.closest?.(".scrim .sheet");if(!sh||t.closest("input,textarea,select,.gzone,.dscroll,.filters,.fsugg,.sq-rep,.ftop-tags"))return;
+function glDebut(t,x,y){const sh=t.closest?.(".scrim .sheet");if(!sh||t.closest("input,textarea,select,.gzone,.dscroll,.filters,.fsugg,.sq-rep,.ftop-tags,.glisse"))return;
   if(sh.scrollTop>2&&!t.closest(".grab,.sheet-h"))return;gl={sh,x,y,dy:0,moved:false}}
 function glBouge(x,y){if(!gl)return false;const dy=y-gl.y,dx=x-gl.x;
   if(!gl.moved){if(Math.abs(dy)<8&&Math.abs(dx)<8)return false;if(dy<0||Math.abs(dx)>Math.abs(dy)){gl=null;return false}gl.moved=true;gl.sh.style.transition="none"}
