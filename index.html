@@ -701,6 +701,26 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .pick{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 12px;font-size:16px;white-space:nowrap;overflow:hidden;color:var(--ink)}
 .pick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0}
 .glisse b{position:absolute;left:0;top:0;bottom:0;width:58px;border-radius:999px;background:var(--choco);opacity:.9}
+/* Reprendre dans X semaines : le petit planning (B1c) */
+.quick button small{display:block;font-size:10px;font-weight:700;color:var(--muted)}
+.quick button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
+.quick button.on small{color:var(--b1)}
+.mpw{background:var(--surface);border-radius:16px;padding:6px 6px 8px;box-shadow:var(--shadow);margin-top:8px}
+.mpj{display:grid;grid-template-columns:26px repeat(5,minmax(0,1fr));text-align:center;font-size:10px;color:var(--muted);font-weight:600;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.mpj b{display:block;font-size:15px;color:#CDBBA2}
+.mpg{position:relative;display:grid;grid-template-columns:26px repeat(5,minmax(0,1fr));column-gap:2px;margin-top:6px}
+.mpt{position:relative}
+.mpt span{position:absolute;right:4px;font-size:8.5px;color:var(--muted);transform:translateY(-6px)}
+.mpt span.f{font-size:10px;font-weight:800;color:var(--choco)}
+.mpc{position:relative;border-left:1px solid var(--line)}
+.mpc button{position:absolute;left:0;right:0;border:0;background:none;padding:0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.mpc button:active{background:var(--accent-soft)}
+.mpb{position:absolute;left:1px;right:1px;border-radius:5px;background:var(--b1);color:#3A2018;font-size:9px;font-weight:700;padding:1px 3px;overflow:hidden;white-space:nowrap;pointer-events:none}
+.mpb.perso{background:var(--b2);color:var(--bg)}
+.mpb.choix{background:var(--choco);color:var(--bg);display:grid;place-items:center;font-size:10px;font-weight:800;z-index:2}
+.mpbar{position:sticky;bottom:0;z-index:3;margin-top:10px;border-radius:20px;background:var(--choco);color:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 16px;box-shadow:0 14px 30px -12px rgba(33,2,2,.6)}
+.mpbar b{font-size:14px}.mpbar small{display:block;font-size:11px;opacity:.8}
+.mpbar button{flex:none;border:0;border-radius:999px;background:var(--bg);color:var(--choco);font-weight:800;font-size:14px;padding:9px 16px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1578,7 +1598,9 @@ function openRdv(r, preset={}){
         <div class="fld"><label for="rHeure">Heure</label><div class="pick"><span id="rHeureTxt"></span><input id="rHeure" type="time" step="900" value="${r.heure}" required></div></div>
         <div class="fld"><label for="rDuree">Durée</label><input id="rDuree" type="number" inputmode="numeric" min="15" step="15" value="${r.duree}"></div>
       </div>
-      <div class="quick" id="quick" aria-label="Raccourcis de date">${[["+1 sem",7],["+2 sem",14],["+3 sem",21],["+4 sem",28],["+6 sem",42]].map(([l,n])=>`<button type="button" data-plus="${n}">${l}</button>`).join("")}</div>
+      <div class="label" style="margin-bottom:-4px">${isNew?"Dans":"Reprendre dans"}</div>
+      <div class="quick" id="quick" aria-label="Raccourcis de semaines">${[["+1 sem",7],["+2 sem",14],["+3 sem",21],["+4 sem",28],["+6 sem",42]].map(([l,n])=>`<button type="button" data-plus="${n}">${l}<small>${fJM.format(parse(mondayOf(addDays(isNew?iso(new Date()):r.date,n))))}</small></button>`).join("")}</div>
+      <div id="miniPl"></div>
       <div class="dhint" id="dHint"></div>
       <div class="fld"><label for="rPrest">Prestation</label><select id="rPrest"><option value="">Choisir…</option>${prestOpts}</select></div>
       <div class="fld" hidden><label>Options</label><div class="opts" id="opts">${optsHtml}</div></div>
@@ -1636,7 +1658,32 @@ function openRdv(r, preset={}){
       const g=sheet.querySelector(`[data-gift="${cb.dataset.i}"]`);g.disabled=!cb.checked;g.classList.toggle("on",!!o.offert);upd()});
     sheet.querySelectorAll("[data-gift]").forEach(g=>g.onclick=e=>{e.preventDefault();const o=state.opts[+g.dataset.gift];o.offert=!o.offert;g.classList.toggle("on",o.offert);
       if(o.offert)toast("Sûre ? Un extra offert, c'est "+eur(o.prix)+" en moins 😉");upd()});
-    sheet.querySelectorAll("#quick button").forEach(q=>q.onclick=()=>{$("#rDate").value=addDays(iso(new Date()),+q.dataset.plus);upd()});
+    // B1c : « +2 sem » montre ta semaine (lundi → vendredi, tes heures, toutes les demi-heures) ; tu touches un trou, puis Valider
+    const base=isNew?iso(new Date()):r.date;let mpSem=null,mpChoix=null;
+    const hTxt2=m=>hhmm(m).replace(/^0/,"").replace(":","h").replace(/h00$/,"h"),durTxt=d=>d>=60?Math.floor(d/60)+" h"+(d%60?" "+d%60:""):d+" min";
+    function dessineMini(){const box=$("#miniPl");if(!mpSem){box.innerHTML="";return}
+      const ouv=horaires().filter(h=>h.ouvert),A=ouv.length?Math.min(...ouv.map(h=>mins(h.de||"09:00"))):540,B=ouv.length?Math.max(...ouv.map(h=>mins(h.a||"18:00"))):1080;
+      const H=17,N=Math.max(1,(B-A)/30),b=build(),dur=b.duree||60,jours=[0,1,2,3,4].map(i=>addDays(mpSem,i));
+      let h=`<div class="mpw"><div class="mpj"><span></span>${jours.map(d=>`<span>${JC[(parse(d).getDay()+6)%7]}<b>${parse(d).getDate()}</b></span>`).join("")}</div>`;
+      h+=`<div class="mpg" style="height:${N*H}px"><div class="mpt">${Array.from({length:N},(_,k)=>{const m=A+k*30;return `<span class="${m%60?"":"f"}" style="top:${k*H}px">${m%60?"30":Math.floor(m/60)+"H"}</span>`}).join("")}</div>`;
+      for(const d of jours){h+=`<div class="mpc">`;
+        for(let k=0;k<N;k++)h+=`<button type="button" data-mp="${d}|${A+k*30}" style="top:${k*H}px;height:${H}px" aria-label="${fDay.format(parse(d))} à ${hTxt2(A+k*30)}"></button>`;
+        for(const x of S.rdvs.filter(x=>x.date===d&&x.statut!=="annule"&&x.id!==r.id)){const s=Math.max(mins(x.heure),A),e=Math.min(mins(x.heure)+(Number(x.duree)||60),B);if(e<=s)continue;
+          h+=`<span class="mpb ${x.perso?"perso":""}" style="top:${(s-A)/30*H+1}px;height:${(e-s)/30*H-2}px">${x.perso?"":esc(nomCourt(S.clients.get(x.clientId)))}</span>`}
+        if(mpChoix&&mpChoix.d===d)h+=`<span class="mpb choix" style="top:${(mpChoix.m-A)/30*H+1}px;height:${Math.max(H,Math.min(dur,B-mpChoix.m)/30*H)-2}px">${hTxt2(mpChoix.m)}</span>`;
+        h+=`</div>`}
+      h+=`</div></div>`;
+      if(mpChoix){const c=S.clients.get(b.clientId);
+        h+=`<div class="mpbar"><span><b>${cap(fJS.format(parse(mpChoix.d)))} ${fJM.format(parse(mpChoix.d))} · ${hTxt2(mpChoix.m)}</b><small>${esc([c?.prenom,b.prestation?.nom,durTxt(dur)].filter(Boolean).join(" · "))}</small></span><button type="button" id="mpOk">Valider</button></div>`}
+      box.innerHTML=h;
+      box.querySelectorAll("[data-mp]").forEach(x=>x.onclick=()=>{const [d,m]=x.dataset.mp.split("|");mpChoix={d,m:+m};dessineMini()});
+      const ok=box.querySelector("#mpOk");if(ok)ok.onclick=async()=>{const hm=hhmm(mpChoix.m);
+        if(isNew){$("#rDate").value=mpChoix.d;$("#rHeure").value=hm;mpSem=null;mpChoix=null;sheet.querySelectorAll("#quick button").forEach(x=>x.classList.remove("on"));upd();dessineMini();return}
+        const b=build();if(!b.prestation){toast("Choisis d'abord la prestation");return}
+        const body={date:mpChoix.d,heure:hm,duree:b.duree,clientId:b.clientId,prestation:b.prestation,options:b.options.map(o=>({...o,offert:false})),statut:"prevu",note:""};
+        if(await write(()=>S.db.collection("rdv").doc().set(body),`Nouveau rendez-vous : ${fJS.format(parse(body.date))} ${fJM.format(parse(body.date))} à ${hTxt2(mpChoix.m)} ✨`)){closeSheet();render()}}}
+    sheet.querySelectorAll("#quick button").forEach(q=>q.onclick=()=>{const on=!q.classList.contains("on");sheet.querySelectorAll("#quick button").forEach(x=>x.classList.toggle("on",x===q&&on));
+      mpSem=on?mondayOf(addDays(base,+q.dataset.plus)):null;mpChoix=null;dessineMini();if(on)$("#miniPl").scrollIntoView({block:"nearest",behavior:"smooth"})});
     if(!isNew&&$("#btnNext"))$("#btnNext").onclick=()=>{const opts=(r.options||[]).filter(o=>!o.offert);closeSheet();
       openRdv(null,{clientId:r.clientId,date:addDays(r.date,21),heure:r.heure,duree:r.duree,prestation:r.prestation,options:opts})};
     sheet.querySelectorAll("#seg button").forEach(b=>b.onclick=()=>{state.statut=b.dataset.st;sheet.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b))});
