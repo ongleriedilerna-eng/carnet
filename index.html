@@ -223,7 +223,7 @@ form.f{display:flex;flex-direction:column;gap:12px}
 @keyframes wl{from{transform:translateX(40%);opacity:.2}to{transform:none;opacity:1}}
 @keyframes wr{from{transform:translateX(-40%);opacity:.2}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.wanim-l,.wanim-r{animation:none}}
-.wgrid{display:grid;grid-template-columns:28px repeat(6,minmax(0,1fr));column-gap:2px}
+.wgrid{display:grid;grid-template-columns:28px repeat(7,minmax(0,1fr));column-gap:2px}
 .wday{border:0;background:none;padding:2px 0 8px;display:flex;flex-direction:column;align-items:center;gap:0;color:var(--muted);min-width:0;position:relative;border-bottom:1px solid var(--line)}
 .wday .l{font-size:11.5px;font-weight:600;color:var(--muted)}
 .wday .n{font:700 19px/1.15 var(--body);color:#CDBBA2}
@@ -364,7 +364,7 @@ form.f{display:flex;flex-direction:column;gap:12px}
 .dropto{display:none;position:absolute;right:3px;top:3px;background:var(--accent-hover);color:#fff;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 4px;z-index:2}
 .lift .dropto{display:block}
 /* Journalier : journée en grand */
-.dstrip{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:12px 0 8px}
+.dstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0 8px}
 .dstrip button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:5px 0;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--choco)}
 .dstrip .l{font-size:12px;font-weight:700}.dstrip .n{font-size:17px;font-weight:700}.dstrip .c{font-size:10px;color:var(--muted);font-weight:600}
 .dstrip button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}.dstrip button.on .c{color:var(--bg);opacity:.8}
@@ -415,7 +415,7 @@ button.wday:hover .n{color:var(--choco)}
 button.wday:active{background:var(--accent-soft)}
 .dscroll{grid-column:2/-1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain;min-width:0}
 .dscroll::-webkit-scrollbar{display:none}
-.dweek{flex:0 0 100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:2px;scroll-snap-align:start;scroll-snap-stop:always}
+.dweek{flex:0 0 100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:2px;scroll-snap-align:start;scroll-snap-stop:always}
 .wday .c{height:13px;font-size:10px;font-weight:700;color:var(--b2);line-height:13px;white-space:nowrap}
 .wtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
 /* Rdv cachés dans l'autre demi-journée */
@@ -1070,7 +1070,7 @@ function jourInfo(d){const i=(parse(d).getDay()+6)%7,h=horaires()[i]||{},v=enVac
   return {ferme:!!v||!h.ouvert,raison:v?"Vacances":(!h.ouvert?"Fermé":""),de:mins(h.de||"09:00"),a:mins(h.a||"19:00"),pDe:h.pDe&&h.pA?mins(h.pDe):null,pA:h.pDe&&h.pA?mins(h.pA):null}}
 const hTxt=v=>{const [h,m]=String(v||"").split(":");return +h+"h"+(m&&m!=="00"?m:"")};
 function renderSemaine(){
-  const today=iso(new Date()), ws=mondayOf(S.day), we=addDays(ws,5);
+  const today=iso(new Date()), ws=mondayOf(S.day), we=addDays(ws,6);
   const sameM=ws.slice(0,7)===we.slice(0,7);
   const mL=new Intl.DateTimeFormat("fr-FR",{month:"long"}), mS=new Intl.DateTimeFormat("fr-FR",{month:"short"});
   const titre=(sameM?cap(mL.format(parse(we))):cap(mS.format(parse(ws)).replace(".",""))+" – "+mS.format(parse(we)).replace(".",""))+`<span class="yr num">${parse(we).getFullYear()}</span>`;
@@ -1079,7 +1079,7 @@ function renderSemaine(){
   // combien de rdv dans chaque demi-journée, pour ne jamais en rater un
   const actifsDe=d=>rdvsOf(d).filter(r=>r.statut!=="annule"&&!r.perso);
   const estMatin=r=>mins(r.heure)<13*60, estAprem=r=>mins(r.heure)+(Number(r.duree)||60)>13*60;
-  let nM=0,nA=0;for(let i=0;i<6;i++)for(const r of actifsDe(addDays(ws,i))){if(estMatin(r))nM++;if(estAprem(r))nA++}
+  let nM=0,nA=0;for(let i=0;i<7;i++)for(const r of actifsDe(addDays(ws,i))){if(estMatin(r))nM++;if(estAprem(r))nA++}
   const cnt=n=>n?`<span class="cnt num">${n}</span>`:"";
   let h=`<div class="wkhead"><button class="iconbtn" data-act="wstep" data-n="-7" aria-label="Semaine précédente">‹</button>
     <button type="button" class="mlabel" data-act="mois" aria-label="Voir tout le mois"><b>${titre}<span class="mfleche">▾</span></b><small class="num">${plg}</small></button>
@@ -1092,17 +1092,17 @@ function renderSemaine(){
   const PAGES=8;
   h+=`<div class="wgrid"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
   for(let p=-PAGES;p<=PAGES;p++){const w0=addDays(ws,p*7);h+=`<div class="dweek">`;
-  for(let i=0;i<6;i++){const d=addDays(w0,i),n=actifsDe(d).length;
+  for(let i=0;i<7;i++){const d=addDays(w0,i),n=actifsDe(d).length;
     h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":""}</span></button>`}
   h+=`</div>`}
   h+=`</div></div>`;
   const JW=jourInfo(addDays(ws,1));
   h+=`<div class="wgrid" id="wbody" data-a="${A}" style="--s:${SLOT}px;height:${N*SLOT}px;margin-top:4px"><div class="wtimes">`;
-  for(let k=0;k<N;k++){const m=A+k*30;h+=`<span class="num ${m%60?"":"full"} ${ws<=today&&today<=addDays(ws,5)&&ici(m)?"maint":""} ${JW.pDe!=null&&m>=JW.pDe&&m<JW.pA?"lunch":""}" style="top:${k*SLOT}px">${m%60?"30":Math.floor(m/60)+"H"}</span>`}
+  for(let k=0;k<N;k++){const m=A+k*30;h+=`<span class="num ${m%60?"":"full"} ${ws<=today&&today<=addDays(ws,6)&&ici(m)?"maint":""} ${JW.pDe!=null&&m>=JW.pDe&&m<JW.pA?"lunch":""}" style="top:${k*SLOT}px">${m%60?"30":Math.floor(m/60)+"H"}</span>`}
   h+=`</div>`;
-  for(let i=0;i<6;i++){
+  for(let i=0;i<7;i++){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
-    h+=`<div class="wcol ${i===5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
+    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
     for(let k=0;k<N;k++){const m=A+k*30,hm=hhmm(m);
       h+=`<button class="wcell ${k%2?"h":""} ${d===today&&ici(m)?"maintenant":""} ${!J.ferme&&J.pDe!=null&&m>=J.pDe&&m<J.pA?"lunch":""} ${!J.ferme&&(m<J.de||m>=J.a)?"hors":""}" style="top:${k*SLOT}px;height:${SLOT}px" data-act="cell" data-d="${d}" data-m="${m}" aria-label="${fDay.format(parse(d))} à ${hm.replace(":","h")}"></button>`}
     const ls=Math.max(J.pDe??0,A),le=Math.min(J.pA??0,B);if(!J.ferme&&le>ls)h+=`<div class="lunchtag" style="top:${(ls-A)/30*SLOT+(le-ls)/60*SLOT-6}px">pause</div>`;
@@ -1132,7 +1132,7 @@ function renderJour(){
     <div class="datepill"><button data-act="dstep" data-n="-1" aria-label="Jour précédent">‹</button><span>${cap(fDay.format(parse(S.day)))}</span><button data-act="dstep" data-n="1" aria-label="Jour suivant">›</button></div>`;
   if(S.day!==today) h+=` <button class="link" data-act="pickJ" data-d="${today}">Aujourd'hui</button>`;
   h+=`<div class="dstrip">`;
-  for(let i=0;i<6;i++){const d=addDays(ws,i),n=rdvsOf(d).filter(r=>r.statut!=="annule"&&!r.perso).length;
+  for(let i=0;i<7;i++){const d=addDays(ws,i),n=rdvsOf(d).filter(r=>r.statut!=="annule"&&!r.perso).length;
     h+=`<button class="${d===S.day?"on":""} ${d===today?"today":""}" data-act="pickJ" data-d="${d}" aria-label="${fDay.format(parse(d))}"><span class="l">${WD[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n?n+" rdv":"libre"}</span></button>`}
   h+=`</div>`;
   const list=rdvsOf(S.day), actifs=list.filter(r=>r.statut!=="annule"&&r.statut!=="lapin"&&!r.perso);
