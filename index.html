@@ -738,6 +738,12 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .wday.today .n{background:#EE7B22;color:#fff!important;border-radius:999px;min-width:32px;padding:0 6px;font-weight:800}
 .wday.today .l{color:#EE7B22!important;font-weight:800}
 .wcol.ajd{background-color:color-mix(in srgb,#EE7B22 10%,transparent)}
+/* Confirmations : la fenêtre « Rendez-vous pris », et la cloche */
+.cbox p small{display:block;font-size:14px;font-weight:600;color:var(--muted);margin-top:4px}
+.cbox .ccol{display:flex;flex-direction:column;gap:8px}
+.smsb.gros{display:block;text-align:center;padding:13px 0;font-size:15px}
+.plusElle{margin:-2px 0 2px}
+.plusElle .sajout{padding:7px 12px;font-size:12.5px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1589,6 +1595,23 @@ function clientOptions(sel){
 }
 
 // Une question au milieu de l'écran, Oui / Non (pour supprimer)
+// La confirmation d'un rendez-vous (sans le prix) : l'iPhone de la cliente reconnaît la date et lui propose de l'ajouter à son agenda
+function confTexte(r){const c=S.clients.get(r.clientId),f=new Intl.DateTimeFormat("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  return `Bonjour ${c?.prenom||""} ! Ton rendez-vous est bien pris en compte : ${f.format(parse(r.date))} à ${r.heure.replace(/^0/,"").replace(":","h")}${r.prestation?" pour "+r.prestation.nom:""} 💅\nÀ bientôt !\n${S.catalogue.signature||""}`.trim()}
+// Le bouton pour envoyer un message à la cliente : SMS si on a son numéro, sinon Instagram, sinon « Ajouter son numéro »
+function boutonEnvoi(r,txt,marque){const c=S.clients.get(r.clientId),tel=c?.tel?telIntl(c.tel):"";
+  if(tel)return `<a class="smsb" ${marque}="${r.id}" href="sms:${esc(tel)}?&body=${encodeURIComponent(txt)}">SMS</a>`;
+  if(c?.insta)return `<a class="smsb" ${marque}="${r.id}" data-igtxt="${encodeURIComponent(txt)}" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener">Instagram</a>`;
+  return `<button type="button" class="nonum" data-act="editCli" data-id="${c?.id||""}">Ajouter son numéro</button>`}
+// Une confirmation touchée = envoyée : on le note, elle quitte la cloche
+document.addEventListener("click",e=>{const a=e.target.closest("a[data-conf]");if(!a)return;const r=S.rdvs.find(x=>x.id===a.dataset.conf);if(!r)return;
+  r.confirme=true;write(()=>S.db.doc("rdv/"+r.id).update({confirme:true}));setTimeout(()=>{a.outerHTML=`<span class="ok">Envoyé</span>`;majCloche();document.querySelector(".cmodal")?.remove()},400)});
+// Juste après avoir validé un rendez-vous : on propose d'envoyer la confirmation tout de suite
+function proposerConfirmation(r){const d=document.createElement("div");d.className="cmodal";
+  const f=new Intl.DateTimeFormat("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  d.innerHTML=`<div class="cbox" role="alertdialog" aria-modal="true"><p>Rendez-vous pris ✨<small>${esc(cap(f.format(parse(r.date))))} à ${r.heure.replace(/^0/,"").replace(":","h")}</small></p>
+    <div class="ccol">${boutonEnvoi(r,confTexte(r),"data-conf").replace('class="smsb"','class="smsb gros"')}<button type="button" class="cnon">Plus tard</button></div></div>`;
+  document.body.appendChild(d);d.querySelector(".cnon").onclick=()=>d.remove();d.onclick=e=>{if(e.target===d)d.remove()}}
 function confirmer(titre){return new Promise(res=>{const d=document.createElement("div");d.className="cmodal";
   d.innerHTML=`<div class="cbox" role="alertdialog" aria-modal="true"><p>${esc(titre)}</p><div><button type="button" class="cnon">Non</button><button type="button" class="coui">Oui</button></div></div>`;
   document.body.appendChild(d);const fin=v=>{d.remove();res(v)};
@@ -1611,6 +1634,7 @@ function openRdv(r, preset={}){
       <div class="fld" id="cliField"><label for="rCliQ">Cliente</label><div class="ac" style="--c:${r.clientId?stC(S.clients.get(r.clientId)):"var(--line)"}"><span class="dot"></span><input id="rCliQ" value="${esc(S.clients.get(r.clientId)?nomC(S.clients.get(r.clientId)):"")}" placeholder="Tape les premières lettres…" autocomplete="off" autocapitalize="words"><div class="acl" id="acl" hidden></div></div></div>
       <input type="hidden" id="rClient" value="${esc(r.clientId)}">
       <div id="lastBox" hidden></div>
+      ${isNew?"":`<div class="plusElle" id="plusElle"></div>`}
       <div id="quickNew" hidden><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span class="label">Nouvelle cliente</span><button type="button" class="link" id="backCli">← Retour</button></div><div class="two">
         <div class="fld"><label for="qPrenom">Prénom</label><input id="qPrenom" autocomplete="off" autocapitalize="words"></div>
         <div class="fld"><label for="qTel">Téléphone</label><input id="qTel" type="tel" autocomplete="off"></div>
@@ -1628,10 +1652,8 @@ function openRdv(r, preset={}){
       <div class="fld" hidden><label>Options</label><div class="opts" id="opts">${optsHtml}</div></div>
       <div class="total" id="totBox" role="button" aria-label="Changer le montant"><span><small>Total annoncé à la cliente · touche pour changer</small><b class="num" id="tot">0 €</b><small class="modif" id="totModif" hidden>montant changé à la main</small></span><span id="offTxt" style="font-size:13px;text-align:right"></span></div>
       <input type="hidden" id="rNote" value="${esc(r.note||"")}">
-      ${isNew?"":`<div id="paie"></div><div class="plusElle" id="plusElle"></div>`}
+      ${isNew?"":`<div id="paie"></div>`}
       <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
-      <button class="btn ghost" type="button" id="btnMsg">Préparer le message de confirmation</button>
-      <div id="msgBox" hidden></div>
       ${isNew?"":`<button class="btn enfonce" type="button" id="btnDel">Supprimer ce rendez-vous</button>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
@@ -1642,7 +1664,7 @@ function openRdv(r, preset={}){
     function upd(){const b=build();
       // la date et l'heure écrites simplement : 26-10-2026 et 9h30
       $("#rDateTxt").textContent=b.date?b.date.split("-").reverse().join("-"):"—";$("#rHeureTxt").textContent=b.heure?b.heure.replace(/^0/,"").replace(":","h"):"—";
-      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;const gs=$("#glisse span");if(gs)gs.textContent=`Glisse : fini · ${eur(totalRdv(b))}`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
+      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;const fb=$("#btnFini");if(fb)fb.textContent=`✓ Fini · ${eur(totalRdv(b))} en espèces`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";$("#msgBox").hidden=true}
     const norm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     function lastOf(id){const t=iso(new Date());const l=S.rdvs.filter(x=>x.clientId===id&&x.id!==r.id&&x.statut!=="annule"&&x.prestation).sort((a,b)=>(b.date+b.heure).localeCompare(a.date+a.heure));return l.find(x=>x.date<=t)||l[0]}
     function applyLast(l){
@@ -1702,8 +1724,9 @@ function openRdv(r, preset={}){
       const ok=box.querySelector("#mpOk");if(ok)ok.onclick=async()=>{const hm=hhmm(mpChoix.m);
         if(isNew){$("#rDate").value=mpChoix.d;$("#rHeure").value=hm;mpSem=null;mpChoix=null;sheet.querySelectorAll("#quick button").forEach(x=>x.classList.remove("on"));upd();dessineMini();return}
         const b=build();if(!b.prestation){toast("Choisis d'abord la prestation");return}
-        const body={date:mpChoix.d,heure:hm,duree:b.duree,clientId:b.clientId,prestation:b.prestation,options:b.options.map(o=>({...o,offert:false})),statut:"prevu",note:""};
-        if(await write(()=>S.db.collection("rdv").doc().set(body),`Nouveau rendez-vous : ${fJS.format(parse(body.date))} ${fJM.format(parse(body.date))} à ${hTxt2(mpChoix.m)} ✨`)){closeSheet();render()}}}
+        const body={date:mpChoix.d,heure:hm,duree:b.duree,clientId:b.clientId,prestation:b.prestation,options:b.options.map(o=>({...o,offert:false})),statut:"prevu",note:"",confirme:false};
+        const ref=S.db.collection("rdv").doc();
+        if(await write(()=>ref.set(body))){closeSheet();render();proposerConfirmation({...body,id:ref.id})}}}
     sheet.querySelectorAll("#quick button").forEach(q=>q.onclick=()=>{const on=!q.classList.contains("on");sheet.querySelectorAll("#quick button").forEach(x=>x.classList.toggle("on",x===q&&on));
       mpSem=on?mondayOf(addDays(base,+q.dataset.plus)):null;mpChoix=null;dessineMini();if(on)$("#miniPl").scrollIntoView({block:"nearest",behavior:"smooth"})});
     if(!isNew&&$("#btnNext"))$("#btnNext").onclick=()=>{const opts=(r.options||[]).filter(o=>!o.offert);closeSheet();
@@ -1713,7 +1736,7 @@ function openRdv(r, preset={}){
     // « Rendez-vous fini » : un seul geste, encaissé en espèces, le rdv passe en « Fait » et le montant va dans le Bilan
     function dessinePaie(){const p=$("#paie");if(!p)return;
       p.innerHTML=(r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
-        :`<div class="glisse" id="glisse"><b id="gF"></b><i id="gK" aria-label="Glisser pour finir">›</i><span>Glisse : fini · ${eur(totalRdv(build()))}</span></div>`)
+        :`<button type="button" class="btn fini" id="btnFini">✓ Fini · ${eur(totalRdv(build()))} en espèces</button>`)
         +`<div class="stpills">${[["lapin","Lapin"],["annule","Annulé"]].map(([k,l])=>`<button type="button" data-stp="${k}" class="${state.statut===k?"on":""}">${l}</button>`).join("")}</div>`;
       async function finir(){const b=build(),montant=totalRdv(b),paye={mode:"Espèces",montant,le:iso(new Date())};
         if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait",total:b.total}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;state.statut="fait";closeSheet();render()}else dessinePaie()}
@@ -1724,6 +1747,7 @@ function openRdv(r, preset={}){
         k.onpointermove=e=>{if(x0==null)return;dx=Math.max(0,Math.min(max(),e.clientX-x0));suit(dx)};
         k.onpointerup=k.onpointercancel=()=>{if(x0==null)return;x0=null;k.style.transition="transform .2s";f.style.transition="width .2s";
           if(dx>=max()*.85){suit(max());finir()}else{suit(0);dx=0}}}
+      const fb=$("#btnFini");if(fb)fb.onclick=finir;
       // LAPIN / ANNULÉ : un toucher l'enregistre, un second le retire
       p.querySelectorAll("[data-stp]").forEach(b=>b.onclick=async()=>{const nv=state.statut===b.dataset.stp?"prevu":b.dataset.stp;
         if(await write(()=>S.db.doc("rdv/"+r.id).update({statut:nv}))){state.statut=nv;r.statut=nv;dessinePaie();render()}});
@@ -1747,12 +1771,6 @@ function openRdv(r, preset={}){
     ["#rDate","#rHeure"].forEach(s=>{$(s).addEventListener("change",upd);$(s).addEventListener("click",e=>{try{e.target.showPicker?.()}catch(_){}})});
     upd();
 
-    $("#btnMsg").onclick=()=>{const b=build();let c=S.clients.get(b.clientId);if(b.clientId==="__new")c={prenom:$("#qPrenom").value};
-      if(!b.prestation){toast("Choisis d'abord la prestation");return}
-      const txt=confirmMsg(b,c);const box=$("#msgBox");box.hidden=false;
-      box.innerHTML=`<div class="msg" id="msgTxt">${esc(txt)}</div><div class="actions" style="margin-top:8px">${c?.insta?`<a class="btn" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener" data-igtxt="${encodeURIComponent(txt)}">Instagram</a>`:`<button type="button" class="btn" id="cp">Copier</button>`}<button type="button" class="btn ghost" id="cpClose">Masquer</button></div>`;
-      box.querySelector("#cp")?.addEventListener("click",()=>{navigator.clipboard.writeText(txt).then(()=>toast("Copié ✨"),()=>{const sel=getSelection(),rg=document.createRange();rg.selectNodeContents(box.querySelector("#msgTxt"));sel.removeAllRanges();sel.addRange(rg);toast("Texte sélectionné : fais Copier")})});
-      box.querySelector("#cpClose").onclick=()=>{box.hidden=true}};
 
     if(!isNew)$("#btnDel").onclick=async()=>{if(!await confirmer("Souhaitez-vous vraiment supprimer ce rendez-vous ?"))return;
       if(await write(()=>S.db.doc("rdv/"+r.id).delete(),"Rendez-vous supprimé"))closeSheet()};
@@ -1764,7 +1782,7 @@ function openRdv(r, preset={}){
         const ref=S.db?S.db.collection("clientes").doc():null;if(!ref){toast("Pas connectée");return}
         const ok=await write(()=>ref.set({prenom:p,nom:"",tel:$("#qTel").value.trim(),insta:"",statut:"nouvelle",notes:"",allergies:"",creeLe:iso(new Date())}));if(!ok)return;b.clientId=ref.id}
       const conflit=S.rdvs.find(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule"&&mins(x.heure)<mins(b.heure)+b.duree&&mins(b.heure)<mins(x.heure)+(Number(x.duree)||60));
-      const {id,...body}=b;
+      const {id,...body}=b;if(isNew)body.confirme=false;
       const ok=await write(()=>isNew?S.db.collection("rdv").doc().set(body):S.db.doc("rdv/"+r.id).set(body), conflit?"Enregistré, mais ça chevauche "+nomC(S.clients.get(conflit.clientId)):(isNew?"Rendez-vous ajouté":"Enregistré"));
       if(ok){S.day=b.date;S.cal=b.date.slice(0,7);closeSheet();render()}};
   });
@@ -1902,18 +1920,21 @@ function openBonneAnnee(){const {de,l}=clientesBA(),a=anBA();
         if(i===l.length-1){go.classList.add("fini");go.textContent=`Envoyé à ${l.length} cliente${l.length>1?"s":""}`}},500+i*400))};
   })}
 /* ---------- clochette « À faire » : anniversaires du jour + rappels de demain + bonne année (1er au 7 janvier) ---------- */
-function aFaire(){const an=annivDuJour(),ra=rdvDemain().filter(r=>!r.rappel),ba=enJanvier()&&clientesBA().l.length>0,sb=[],lib=S.attente.length?placeLiberee():null;
-  return {an,ra,ba,sb,lib,n:an.length+ra.length+(ba?1:0)+(sb.length?1:0)+(lib?1:0)}}
+function aConfirmer(){const t=iso(new Date());return S.rdvs.filter(r=>r.confirme===false&&r.date>=t&&r.statut!=="annule"&&r.statut!=="lapin"&&S.clients.has(r.clientId)).sort((a,b)=>(a.date+a.heure).localeCompare(b.date+b.heure))}
+function aFaire(){const an=annivDuJour(),ra=rdvDemain().filter(r=>!r.rappel),ba=enJanvier()&&clientesBA().l.length>0,sb=[],lib=S.attente.length?placeLiberee():null,co=aConfirmer();
+  return {an,ra,ba,sb,lib,co,n:an.length+ra.length+co.length+(ba?1:0)+(sb.length?1:0)+(lib?1:0)}}
 function majCloche(){const b=document.getElementById("nbFaire");if(!b)return;const {n}=aFaire();b.hidden=!n;b.textContent=n>9?"9+":String(n)}
-function openAFaire(){const {an,ra,ba,sb}=aFaire(),d=addDays(iso(new Date()),1),auj=iso(new Date());
+function openAFaire(){const {an,ra,ba,sb,co}=aFaire(),d=addDays(iso(new Date()),1),auj=iso(new Date());
   const rj=rdvsOf(auj).filter(r=>!r.perso&&r.clientId&&r.statut!=="annule"&&r.statut!=="lapin");
   let h=`<div class="sheet-h"><h3>À faire</h3></div>`;
   if(rj.length||an.length)h+=`<div class="label" style="margin:4px 0 6px">Aujourd'hui</div>`;
   if(rj.length)h+=`<div class="card afrdv">${rj.map(r=>{const c=S.clients.get(r.clientId);return `<button type="button" class="row" data-act="editRdv" data-id="${r.id}"><b class="num">${esc(r.heure.replace(/^0/,"").replace(":","h"))}</b><span class="afn">${nomHTML(c)}</span><span class="afp">${esc(r.prestation?.nom||"")}</span></button>`}).join("")}</div>`;
   if(an.length)h+=an.map(c=>{const a=ageDe(c);return `<div class="fcarte"><div class="ft">${GATEAU}<span><b>Anniversaire ${deNom(c.prenom||nomC(c))}</b><small>${a?a+" ans · ":""}message prêt avec son prénom</small></span></div><button type="button" class="btn" data-act="annivMsg" data-id="${c.id}">Lui souhaiter</button></div>`}).join("");
-  if(ra.length)h+=`<div class="label" style="margin:14px 0 6px">Ce soir</div><div class="fcarte"><div class="ft">${ENVEL}<span><b>Rappels de demain</b><small>${ra.length} cliente${ra.length>1?"s":""} · ${fDay.format(parse(d))}</small></span></div><button type="button" class="btn" data-act="rappels">Envoyer à toutes</button></div>`;
+  if(ra.length)h+=`<div class="label" style="margin:14px 0 6px">Ce soir</div><div class="fcarte"><div class="ft">${ENVEL}<span><b>Rappels de demain</b><small>${ra.length} cliente${ra.length>1?"s":""} · ${fDay.format(parse(d))}</small></span></div><button type="button" class="btn" data-act="rappels">Voir les rappels</button></div>`;
+  if(co.length)h+=`<div class="label" style="margin:14px 0 6px">Confirmations à envoyer</div><div class="rl">${co.map(r=>{const c=S.clients.get(r.clientId);
+    return `<div class="rli"><span class="av">${esc(initials(c))}</span><span class="rn"><b>${esc(nomC(c))}</b><small>${esc(cap(fJS.format(parse(r.date))))} ${fJM.format(parse(r.date))} · ${r.heure.replace(/^0/,"").replace(":","h")}</small></span><span class="re">${boutonEnvoi(r,confTexte(r),"data-conf")}</span></div>`}).join("")}</div>`;
   if(ba){const n=clientesBA().l.length;h+=`<div class="label" style="margin:14px 0 6px">Nouvelle année</div><div class="fcarte"><div class="ft">${ENVEL}<span><b>Bonne année ${anBA()}</b><small>${n} cliente${n>1?"s":""} venue${n>1?"s":""} ces 3 derniers mois</small></span></div><button type="button" class="btn" data-act="bonneAnnee">Envoyer à toutes</button></div>`}
-  if(!rj.length&&!an.length&&!ra.length&&!ba&&!sb.length)h+=`<div class="empty"><b>Rien à faire pour l'instant</b>Tes rendez-vous du jour, les anniversaires, les rappels de demain et la bonne année (début janvier) s'afficheront ici.</div>`;
+  if(!rj.length&&!an.length&&!ra.length&&!co.length&&!ba&&!sb.length)h+=`<div class="empty"><b>Rien à faire pour l'instant</b>Tes rendez-vous du jour, les anniversaires, les rappels de demain et la bonne année (début janvier) s'afficheront ici.</div>`;
   h+=`<div id="att"></div>`;
   openSheet(h,montAttente)}
 // Fiche cliente : liens Instagram et téléphone
@@ -2443,7 +2464,7 @@ function openBulle(date,heure,anchor,pre){
         const ref=S.db?S.db.collection("clientes").doc():null;if(!ref){toast("Pas connectée");b.disabled=false;return}
         if(!await write(()=>ref.set({prenom:p,nom:"",tel:B.nouv.tel.trim(),insta:"",statut:"nouvelle",notes:"",allergies:"",creeLe:iso(new Date())}))){b.disabled=false;return}
         clientId=ref.id}
-      const body={date,heure,duree:duree(),clientId,prestation:{nom:B.prest.nom,prix:B.prest.prix},options:[],statut:"prevu",note:""};
+      const body={date,heure,duree:duree(),clientId,prestation:{nom:B.prest.nom,prix:B.prest.prix},options:[],statut:"prevu",note:"",confirme:false};
       const conflit=S.rdvs.find(x=>x.date===date&&x.statut!=="annule"&&mins(x.heure)<mins(heure)+body.duree&&mins(heure)<mins(x.heure)+(Number(x.duree)||60));
       const ok=await write(()=>S.db.collection("rdv").doc().set(body),conflit?"Réservé, mais ça chevauche "+nomC(S.clients.get(conflit.clientId)):"Réservé ✨");
       if(ok){closeSheet();render()}else b.disabled=false;
