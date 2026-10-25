@@ -1600,7 +1600,7 @@ function openClient(c){
       <div class="two"><div class="fld"><label for="cPrenom">Prénom</label><input id="cPrenom" value="${esc(c.prenom)}" required autocomplete="off"></div>
       <div class="fld"><label for="cNom">Nom</label><input id="cNom" value="${esc(c.nom)}" autocomplete="off"></div></div>
       <div class="two"><div class="fld"><label for="cTel">Téléphone</label><input id="cTel" type="tel" value="${esc(c.tel)}" autocomplete="off"></div>
-      <div class="fld"><label for="cInsta">Instagram</label><input id="cInsta" value="${esc(c.insta)}" placeholder="@" autocomplete="off"></div></div>
+      <div class="fld"><label for="cInsta">Instagram</label><input id="cInsta" data-insta value="${esc(c.insta)}" placeholder="@" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div></div>
       <label class="abo" for="cAbo"><input type="checkbox" id="cAbo" ${isAbo(c)?"checked":""}><span class="hrt">♥</span><span><b>Cliente abonnée</b><small>Un petit cœur s'affiche devant son prénom</small></span></label>
       <div style="font-size:12.5px;color:var(--muted);margin-top:-4px">« Nouvelle » et « Fidèle » se mettent tout seuls : Nouvelle jusqu'à 1 prestation, Fidèle à partir de 3.</div>
       ${annivChamps(c)}
@@ -1911,7 +1911,7 @@ function montChamps(sh,id){const c=()=>S.clients.get(id);
   function editeur(k){const x=c();
     if(k==="nom")return `<div class="two"><input class="bnote" id="eP" value="${esc(x.prenom||"")}" placeholder="Prénom" aria-label="Prénom" autocomplete="off"><input class="bnote" id="eN" value="${esc(x.nom||"")}" placeholder="Nom" aria-label="Nom" autocomplete="off"></div><button type="button" class="link" id="ePlus" style="align-self:flex-start;font-size:13px;padding:0">Plus d'options (abonnée, supprimer)</button>`;
     if(k==="tel")return `<label for="eV">Téléphone</label><input class="bnote" id="eV" type="tel" value="${esc(x.tel||"")}" autocomplete="off">`;
-    if(k==="insta")return `<label for="eV">Instagram</label><input class="bnote" id="eV" value="${esc(x.insta||"")}" placeholder="@" autocomplete="off">`;
+    if(k==="insta")return `<label for="eV">Instagram</label><input class="bnote" id="eV" data-insta value="${esc(x.insta||"")}" placeholder="@" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">`;
     if(k==="allergies")return `<label for="eV">Allergie, contre-indication</label><input class="bnote" id="eV" value="${esc(x.allergies||"")}" placeholder="Ex : allergie HEMA, ongles fragiles…" autocomplete="off">`;
     if(k==="notes")return `<label for="eV">Note</label><textarea class="bnote" id="eV" placeholder="Ce que tu veux retenir sur elle">${esc(x.notes||"")}</textarea>`;
     if(k==="anniv")return annivChamps(x)}
@@ -2350,6 +2350,7 @@ document.addEventListener("pointerup",()=>{azDoigt=false});document.addEventList
 document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;S._focusQ=true;render()}});
 document.getElementById("btnAdd").onclick=()=>S.tab==="clientes"?openClient(null):openRdv(null,{date:S.day});
 document.getElementById("btnReglages").onclick=openReglages;
+document.addEventListener("input",e=>{const t=e.target;if(t.matches?.("input[data-insta]")&&t.value&&!t.value.startsWith("@"))t.value="@"+t.value.replace(/^\s+/,"")});
 document.getElementById("btnFaire").onclick=openAFaire;
 const pw=document.getElementById("pw");
 function fit(){if(innerWidth<=600){pw.style.transform="";pw.style.margin="";return}
