@@ -721,6 +721,10 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .mpbar{position:sticky;bottom:0;z-index:3;margin-top:10px;border-radius:20px;background:var(--choco);color:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 16px;box-shadow:0 14px 30px -12px rgba(33,2,2,.6)}
 .mpbar b{font-size:14px}.mpbar small{display:block;font-size:11px;opacity:.8}
 .mpbar button{flex:none;border:0;border-radius:999px;background:var(--bg);color:var(--choco);font-weight:800;font-size:14px;padding:9px 16px}
+/* Rappels de demain (E2) */
+.smsb{display:inline-block;border-radius:999px;background:var(--choco);color:var(--bg);font-size:12.5px;font-weight:800;padding:7px 15px;text-decoration:none}
+.nonum{border:1.5px dashed #CDBBA2;background:none;border-radius:999px;font-size:11.5px;font-weight:700;color:var(--b2);padding:5px 10px;white-space:nowrap}
+.rmsg{font-size:13px;margin-bottom:12px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1837,23 +1841,22 @@ function rappelBar(){const l=rdvDemain(),reste=l.filter(r=>!r.rappel).length;if(
 function rappelTexte(r){const c=S.clients.get(r.clientId),f=new Intl.DateTimeFormat("fr-FR",{weekday:"long",day:"numeric",month:"long"});
   const v={prenom:c?.prenom||"",jour:f.format(parse(r.date)),heure:r.heure.replace(/^0/,"").replace(":","h"),prestation:r.prestation?.nom||"ta prestation",signature:S.catalogue.signature||""};
   return (S.catalogue.rappel||DEFAULT_CATALOGUE.rappel).replace(/\{(prenom|jour|heure|prestation|signature)\}/g,(_,k)=>v[k]).trim()}
-// « Envoyer à toutes ? » par SMS, comme la maquette n°2 : un seul appui, la barre avance et chaque cliente passe en « Envoyé ».
-// Aperçu pour l'instant : aucun SMS ne part vraiment et rien n'est enregistré (le jour où un service SMS sera branché,
-// c'est ici qu'on enverra les messages, chacun avec rappelTexte(r)).
+// Rappels de demain (E2) : un bouton « SMS » par cliente ; Messages s'ouvre avec son numéro et le texte déjà écrit,
+// il n'y a plus qu'à toucher Envoyer. Gratuit : ça part du téléphone, avec le forfait. Une fois touché, le rdv est noté « rappel envoyé ».
 function openRappels(){
   const d=addDays(iso(new Date()),1),l=rdvDemain();
+  const ligne=r=>{const c=S.clients.get(r.clientId),tel=c?.tel?telIntl(c.tel):"";
+    const droite=r.rappel?`<span class="ok">Envoyé</span>`
+      :tel?`<a class="smsb" data-sms="${r.id}" href="sms:${esc(tel)}?&body=${encodeURIComponent(rappelTexte(r))}">SMS</a>`
+      :`<button type="button" class="nonum" data-act="editCli" data-id="${c.id}">Ajouter son numéro</button>`;
+    return `<div class="rli" data-r="${r.id}"><span class="av">${esc(initials(c))}</span><span class="rn"><b>${esc(nomC(c))}</b><small>${r.heure.replace(/^0/,"").replace(":","h")} · ${esc(r.prestation?.nom||"")}</small></span><span class="re">${droite}</span></div>`};
   openSheet(`<div class="sheet-h"><h3>Rappels de demain</h3></div>
-    <p class="rq">Tu as <b>${l.length} rendez-vous</b> demain, ${fDay.format(parse(d))}. Veux-tu envoyer leur message de rappel par SMS à toutes tes clientes ?</p>
-    <div class="rl">${l.map(r=>{const c=S.clients.get(r.clientId);return `<div class="rli" data-r="${r.id}"><span class="av">${esc(initials(c))}</span><span class="rn"><b>${esc(nomC(c))}</b><small>${r.heure.replace(/^0/,"").replace(":","h")} · ${esc(r.prestation?.nom||"")}</small></span><span class="re">${c?.insta?`<a class="igb" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener" data-igtxt="${encodeURIComponent(rappelTexte(r))}">Instagram</a>`:`<span class="att">à envoyer</span>`}</span></div>`}).join("")}</div>
-    <button type="button" class="btn rgo" id="rGo" ${l.length?"":"disabled"}>${l.length?"Envoyer à toutes":"Rien à envoyer"}</button>
-    <div class="rprog" hidden><span></span></div>
-    <button type="button" class="btn ghost" data-act="close" style="margin-top:8px">Plus tard</button>
-    <p class="rpied">Chaque cliente reçoit son SMS avec sa propre heure. Aperçu : pour l'instant, aucun SMS ne part vraiment.</p>`,sheet=>{
-    const go=sheet.querySelector("#rGo"),prog=sheet.querySelector(".rprog"),barre=prog.querySelector("span");
-    go.onclick=()=>{go.disabled=true;go.textContent="Envoi en cours…";prog.hidden=false;
-      l.forEach((r,i)=>setTimeout(()=>{const e=sheet.querySelector(`.rli[data-r="${r.id}"] .re`);if(e)e.innerHTML=`<span class="ok">Envoyé</span>`;
-        barre.style.width=((i+1)/l.length*100)+"%";
-        if(i===l.length-1){go.classList.add("fini");go.textContent=`Envoyé à ${l.length} cliente${l.length>1?"s":""}`}},500+i*500))};
+    <p class="rq">${l.length?`<b>${l.length} rendez-vous</b> demain, ${fDay.format(parse(d))}. Touche « SMS » : le message est déjà écrit avec son heure, tu n'as plus qu'à envoyer.`:"Pas de rendez-vous demain."}</p>
+    ${l.length?`<div class="label" style="margin-bottom:4px">Le message</div><div class="msg rmsg">${esc(rappelTexte(l[0]))}</div>`:""}
+    <div class="rl">${l.map(ligne).join("")}</div>
+    ${l.length?`<p class="rpied">Gratuit : les SMS partent de ton téléphone, avec ton forfait.</p>`:""}`,sheet=>{
+    sheet.addEventListener("click",e=>{const a=e.target.closest("a[data-sms]");if(!a)return;const r=S.rdvs.find(x=>x.id===a.dataset.sms);if(!r)return;
+      r.rappel=true;write(()=>S.db.doc("rdv/"+r.id).update({rappel:true}));setTimeout(()=>{a.outerHTML=`<span class="ok">Envoyé</span>`;majCloche()},400)});
   })}
 /* ---------- bonne année : une fois par an, à toutes les clientes venues ces 3 derniers mois ---------- */
 // L'année souhaitée : en janvier celle qui commence, le reste de l'année (aperçu depuis les réglages) la prochaine
