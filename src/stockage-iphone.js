@@ -75,18 +75,21 @@ function coll(col, tri = null, max = Infinity) {
     doc: id => ref(col + "/" + (id || nouvelId())),
   };
 }
-/* ---------- sauvegarde dans un fichier (Réglages → Mes données) ---------- */
+/* ---------- sauvegarde dans un fichier (Réglages → Mes données, et le rappel en haut) ---------- */
+const DATE_SVG = "carnet-derniere-sauvegarde";
+const lireDateSvg = () => { try { return localStorage.getItem(DATE_SVG) || ""; } catch { return ""; } };
 window.__carnetSauvegarde = {
   async exporter() {
     const nom = "carnet-dilerna-" + new Date().toISOString().slice(0, 10) + ".json";
     const fichier = new File([JSON.stringify(base)], nom, { type: "application/json" });
+    const fait = () => { try { localStorage.setItem(DATE_SVG, new Date().toISOString().slice(0, 10)); } catch {} rappel(); };
     // Sur l'iPhone : la feuille de partage (Enregistrer dans Fichiers, s'envoyer par e-mail…)
     if (navigator.canShare?.({ files: [fichier] })) {
-      try { await navigator.share({ files: [fichier], title: "Sauvegarde du Carnet" }); } catch {}
+      try { await navigator.share({ files: [fichier], title: "Sauvegarde du Carnet" }); fait(); } catch {}
       return;
     }
     const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(fichier), download: nom });
-    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); fait();
   },
   importer() {
     const inp = Object.assign(document.createElement("input"), { type: "file", accept: ".json,application/json" });
@@ -101,5 +104,26 @@ window.__carnetSauvegarde = {
     inp.click();
   },
 };
+
+// Le rappel : une ligne sous l'en-tête quand il y a des clientes et pas de copie depuis 7 jours
+const barre = document.createElement("button");
+barre.type = "button"; barre.className = "rappel-svg"; barre.hidden = true;
+barre.onclick = () => window.__carnetSauvegarde.exporter();
+document.head.insertAdjacentHTML("beforeend", `<style>
+.rappel-svg{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;padding:9px 14px;border:1px solid var(--line);border-radius:14px;
+  background:var(--surface);color:var(--muted);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.rappel-svg span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rappel-svg b{color:var(--accent);font-weight:700;white-space:nowrap}
+</style>`);
+document.getElementById("view")?.before(barre);
+function rappel() {
+  const d = lireDateSvg(), aDesClientes = Object.keys(base.clientes || {}).length > 0;
+  const jours = d ? Math.floor((Date.now() - new Date(d + "T12:00:00")) / 864e5) : Infinity;
+  barre.hidden = !aDesClientes || jours < 7;
+  barre.innerHTML = `<span>${d ? `Sauvegardé il y a ${jours} jours` : "Pense à sauvegarder ton Carnet"}</span><b>Sauvegarder</b>`;
+}
+rappel();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) rappel(); });
+ecouter("clientes", rappel);
 
 window.__ouvrirCarnet(Object.freeze({ collection: p => coll(p), doc: p => ref(p) }));
