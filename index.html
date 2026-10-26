@@ -753,6 +753,10 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 /* Le jour choisi n'a plus de trait dessous (sauf aujourd'hui) ; aujourd'hui : le chiffre en grand, marron très foncé */
 .wday.sel:not(.today)::after{display:none}
 .wday.today .n{background:none!important;color:#2A0F05!important;font-size:26px;line-height:1.05;padding:0;min-width:0;font-weight:800}
+/* A1 : toucher un jour ne fait plus de grosse colonne colorée */
+.wcol.sel:not(.ajd){background-color:transparent}
+/* A1 : la prestation tient sur sa ligne, sans couper le mot */
+.wblk .pr{font-size:10px;letter-spacing:-.03em;overflow-wrap:normal}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1221,12 +1225,12 @@ function enVacances(d){return (S.catalogue.vacances||[]).find(v=>v.du<=d&&d<=v.a
 function jourInfo(d){const i=(parse(d).getDay()+6)%7,h=horaires()[i]||{},v=enVacances(d);
   return {ferme:!!v||!h.ouvert,raison:v?"Vacances":(!h.ouvert?"Fermé":""),de:mins(h.de||"09:00"),a:mins(h.a||"19:00"),pDe:h.pDe&&h.pA?mins(h.pDe):null,pA:h.pDe&&h.pA?mins(h.pA):null}}
 const hTxt=v=>{const [h,m]=String(v||"").split(":");return +h+"h"+(m&&m!=="00"?m:"")};
-// A2 : le jour choisi prend deux parts, un jour fermé une petite bande, les autres une part
+// A1 : tous les jours de la même largeur, un jour fermé en petite bande
 function jourSel(){return (parse(S.day).getDay()+6)%7}
-function jourFin(w0,i){return i!==jourSel()&&jourInfo(addDays(w0,i)).ferme}
-function colonnes(w0){const si=jourSel();return [0,1,2,3,4,5,6].map(i=>i===si?"minmax(0,2fr)":jourFin(w0,i)?"14px":"minmax(0,1fr)").join(" ")}
+function jourFin(w0,i){return jourInfo(addDays(w0,i)).ferme}
+function colonnes(w0){return [0,1,2,3,4,5,6].map(i=>jourFin(w0,i)?"14px":"minmax(0,1fr)").join(" ")}
 function renderSemaine(){
-  // A2 : toute la semaine sur une page ; le jour choisi est plus large, les autres montrent les initiales
+  // A1 : toute la semaine sur une page, les jours de la même largeur ; le dimanche fermé en petite bande
   const today=iso(new Date()), ws=mondayOf(S.day), moi=0, IDX=[0,1,2,3,4,5,6], d0=addDays(ws,IDX[0]), we=addDays(ws,IDX[IDX.length-1]);
   const sameM=d0.slice(0,7)===we.slice(0,7);
   const mL=new Intl.DateTimeFormat("fr-FR",{month:"long"}), mS=new Intl.DateTimeFormat("fr-FR",{month:"short"});
@@ -1269,9 +1273,9 @@ function renderSemaine(){
     for(const x of ev){
       const s0=Math.max(x.s,A),e0=Math.min(x.e,B);if(e0<=s0)continue;
       const top=(s0-A)/30*SLOT, ht=Math.max(18,(e0-s0)/30*SLOT-2), c=S.clients.get(x.r.clientId);
-      const w=100/x.cols,ini=d!==S.day;
+      const w=100/x.cols,ini=false;
       h+=`<button class="wblk ${ini?"ini":""} ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+1}px;height:${ht}px;left:calc(${w*x.col}% + 1px);right:auto;width:calc(${w}% - 2px)" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}" aria-label="${esc(x.r.heure)} ${esc(nomC(c))} ${esc(x.r.prestation?.nom||"")}">
-        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span>${ini?`<span class="w ini">${x.r.perso?"":esc(initials(c))}</span>`:""}<span class="w">${x.r.perso?esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase():esc(nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}</button>`;
+        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span>${ini?`<span class="w ini">${x.r.perso?"":esc(initials(c))}</span>`:""}<span class="w">${x.r.perso?esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase():esc((c?.prenom||"").trim()||nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}</button>`;
     }
     h+=`</div>`;
   }
@@ -2517,7 +2521,7 @@ document.addEventListener("click",e=>{
   if(a==="goWeek"){S.tab="agenda";render();document.getElementById("appscroll").scrollTop=0;window.scrollTo(0,0);return}
   if(a==="selDay"){if(S.swiped)return;S.day=t.dataset.d;S.cal=S.day.slice(0,7);render();return}
   if(a==="openDay"){if(S.swiped)return;S.day=t.dataset.d;S.tab="jour";render();document.getElementById("appscroll").scrollTop=0;window.scrollTo(0,0);return}
-  if(a==="cell"){if(S.swiped)return;if(t.dataset.d!==S.day){S.day=t.dataset.d;S.cal=S.day.slice(0,7);render();return}openBulle(t.dataset.d,hhmm(+t.dataset.m),t);return}
+  if(a==="cell"){if(S.swiped)return;openBulle(t.dataset.d,hhmm(+t.dataset.m),t);return}
   if(a==="half"){S.half=+t.dataset.h;SLOT=24;render();return}
   if(a==="slot"){if(S.swiped)return;const r=t.getBoundingClientRect(),y=(e.clientY-r.top)*(t.offsetHeight/r.height);
     const k=Math.max(0,Math.min((WH1-WH0)*2-1,Math.floor(y/SLOT))),hm=hhmm(WH0*60+k*30);
