@@ -764,6 +764,8 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 /* J4 : le trait de l'heure qu'il est */
 .nowline{position:absolute;left:-1px;right:0;height:2px;background:var(--accent);z-index:2;pointer-events:none}
 .nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+/* Perso : pilule marron foncé sous « Proposer ce créneau au club » */
+.persopil{display:block;width:100%;margin-top:8px;border:0;background:var(--choco);color:var(--bg);border-radius:999px;padding:11px 0;font-size:14px;font-weight:800;text-align:center}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -2423,7 +2425,7 @@ function openBulle(date,heure,anchor,pre){
   }
   function draw(){
     const c=S.clients.get(B.clientId);
-    let h=`<div class="when"><span class="whengros"><b class="num">${hh(heure)}</b><small>${cap(fDay.format(parse(date)))}${date<iso(new Date())?'<span class="passetag">Jour passé</span>':""}</small></span><span class="whenr">${B.perso?`<button type="button" class="pill" data-b="cliente">Une cliente</button>`:c||B.nouv?`<button type="button" class="pill" data-b="chg">Autre cliente</button>`:""}${B.perso?"":`<button type="button" class="perso-rond" data-b="perso" aria-label="Bloquer ce créneau pour moi">Perso</button>`}</span></div>`;
+    let h=`<div class="when"><span class="whengros"><b class="num">${hh(heure)}</b><small>${cap(fDay.format(parse(date)))}${date<iso(new Date())?'<span class="passetag">Jour passé</span>':""}</small></span><span class="whenr">${B.perso?`<button type="button" class="pill" data-b="cliente">Une cliente</button>`:c||B.nouv?`<button type="button" class="pill" data-b="chg">Autre cliente</button>`:""}</span></div>`;
     if(B.perso){
       // Créneau perso : bloqué pour Marie, sans cliente ni prix
       h+=`<div class="label">C'est pour quoi ?</div><div class="pmots"><button type="button" class="${B.bloque?"":"on"}" data-b="ptype" data-v="perso">Pause déj</button><button type="button" class="${B.bloque?"on bl":""}" data-b="ptype" data-v="bloque">Bloqué</button></div>
@@ -2448,6 +2450,8 @@ function openBulle(date,heure,anchor,pre){
       h+=`<div class="tiles">${cat.prestations.map((x,i)=>x.nom===p?.nom?"":`<button type="button" class="tile" data-b="prest" data-i="${i}">${esc(x.nom)}</button>`).join("")}</div>`;
     }
     if(!c&&!B.nouv)h+=`<button type="button" class="clubprop" data-b="club" ${B.q.trim()?"hidden":""}><span class="ccour">${COURONNE}</span>Proposer ce créneau au club</button>`;
+    // « Perso » : une pilule marron foncé, sous « Proposer ce créneau au club »
+    if(!c&&!B.nouv&&!B.perso)h+=`<button type="button" class="persopil" data-b="perso" aria-label="Bloquer ce créneau pour moi">Perso</button>`;
     inn.innerHTML=h;
     foot.innerHTML=`<span><small>Total · fin à ${fin()}</small><b class="num">${B.prest&&B.prest.prix==null?"Prix à fixer":eur(B.prest?.prix||0)}</b></span><button type="button" class="btn" data-b="save">Réserver</button>`;
     place();
