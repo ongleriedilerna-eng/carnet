@@ -752,7 +752,11 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .wcol.fin .fermetag{font-size:8.5px;letter-spacing:.16em}
 /* Le jour choisi n'a plus de trait dessous (sauf aujourd'hui) ; aujourd'hui : le chiffre en grand, marron très foncé */
 .wday.sel:not(.today)::after{display:none}
-.wday.today .n{background:none!important;color:#2A0F05!important;font-size:26px;line-height:1.05;padding:0;min-width:0;font-weight:800}
+/* J1 : aujourd'hui = le chiffre dans un rond marron (moins foncé), « auj. » en marron, la colonne légèrement teintée. Plus d'orange. */
+.wday.today .n{background:#8B5E44!important;color:#FFF8F1!important;border-radius:999px;min-width:32px;padding:0 6px;font-weight:800}
+.wday.today .l{color:#8B5E44!important;font-weight:800}
+.wday.sel::after{display:none}
+.wcol.ajd{background-color:color-mix(in srgb,#8B5E44 13%,transparent)!important}
 /* A1 : toucher un jour ne fait plus de grosse colonne colorée */
 .wcol.sel:not(.ajd){background-color:transparent}
 /* A1 : la prestation tient sur sa ligne, sans couper le mot */
