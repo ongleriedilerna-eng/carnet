@@ -2496,7 +2496,8 @@ function openBulle(date,heure,anchor,pre){
       if(ok){closeSheet();render()}else b.disabled=false;
     }
   });
-  if(pre)pick(pre);else if(B.ici)pick(B.ici);else{draw();if(matchMedia("(hover:hover)").matches)setTimeout(()=>$("#bQ")?.focus(),0)}
+  // aucune cliente mise d'office : on choisit dans la recherche / les récentes, ou « Nouvelle cliente »
+  if(pre)pick(pre);else{draw();if(matchMedia("(hover:hover)").matches)setTimeout(()=>$("#bQ")?.focus(),0)}
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&L.innerHTML)closeSheet()});
 // Fermer une feuille en la faisant glisser vers le bas, au doigt ou à la souris
