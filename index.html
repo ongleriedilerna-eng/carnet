@@ -766,6 +766,10 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
 /* Perso : pilule marron foncé sous « Proposer ce créneau au club » */
 .persopil{display:block;width:100%;margin-top:8px;border:0;background:var(--choco);color:var(--bg);border-radius:999px;padding:11px 0;font-size:14px;font-weight:800;text-align:center}
+/* « Nouvelle cliente » en grand en haut de la feuille nouveau rdv */
+.nvgros{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:2px 0 10px;border:0;background:var(--choco);color:var(--bg);border-radius:18px;padding:15px 0;font-size:17px;font-weight:800}
+.nvgros span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--bg);color:var(--choco);font-size:20px;line-height:1}
+.bsug:not(:has(*)){display:none}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -2421,7 +2425,7 @@ function openBulle(date,heure,anchor,pre){
       const st=all.filter(c=>norm(c.prenom).startsWith(nq)||norm(c.nom).startsWith(nq)||norm(nomC(c)).startsWith(nq));
       res=[...st,...all.filter(c=>!st.includes(c)&&norm(nomC(c)).includes(nq))].slice(0,4)}
     return `<div class="bsug">${titre?`<div class="t">${titre}</div>`:""}${res.map(c=>`<button type="button" data-b="cli" data-id="${c.id}"><span class="av">${esc(initials(c))}</span>${coeur(c)}${esc(nomC(c))}<small>${niveau(c)==="fidele"?"Fidèle":niveau(c)==="nouvelle"?"Nouvelle":""}</small></button>`).join("")||(nq?`<div class="t">Personne à ce nom</div>`:"")}
-      <button type="button" class="new" data-b="new"><span class="av">+</span>Nouvelle cliente${q?" « "+esc(q)+" »":""}</button></div>`;
+      ${q?`<button type="button" class="new" data-b="new"><span class="av">+</span>Nouvelle cliente « ${esc(q)} »</button>`:""}</div>`;
   }
   function draw(){
     const c=S.clients.get(B.clientId);
@@ -2441,6 +2445,8 @@ function openBulle(date,heure,anchor,pre){
       h+=`<div class="who"><span class="av">+</span><span><b>Nouvelle cliente</b></span></div>
         <div class="two"><input class="bnote" id="bPrenom" placeholder="Prénom" value="${esc(B.nouv.prenom)}" autocomplete="off" autocapitalize="words"><input class="bnote" id="bTel" type="tel" placeholder="Téléphone" value="${esc(B.nouv.tel)}" autocomplete="off"></div>`;
     }else{
+      // « Nouvelle cliente » en grand, tout en haut
+      h+=`<button type="button" class="nvgros" data-b="new"><span>+</span>Nouvelle cliente</button>`;
       h+=`<input class="bq" id="bQ" type="search" placeholder="Rechercher une cliente…" value="${esc(B.q)}" autocomplete="off" autocapitalize="words"><div id="bSug">${sug()}</div>`;
     }
     if(c||B.nouv){
