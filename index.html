@@ -1136,14 +1136,23 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-233116";
+<script>window.__V="20261027-234211";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")verifierMaj()});
 addEventListener("pageshow",()=>setTimeout(verifierMaj,1500));
 // toucher le logo en haut à gauche rafraîchit le Carnet (dans l'appli plein écran, on ne peut pas tirer la page vers le bas)
-addEventListener("DOMContentLoaded",()=>document.querySelector(".brand")?.addEventListener("click",()=>location.reload()));setInterval(()=>{if(document.visibilityState==="visible")verifierMaj()},300000)</script>
+addEventListener("DOMContentLoaded",()=>document.querySelector(".brand")?.addEventListener("click",()=>location.reload()));
+// Tirer la page vers le bas quand on est tout en haut (comme dans Instagram) : une petite flèche descend, on lâche, ça recharge
+(()=>{const f=document.createElement("div");f.className="tire";f.innerHTML="↻";document.body.appendChild(f);
+let y0=null,d=0;const haut=()=>scrollY<=0&&(document.getElementById("appscroll")?.scrollTop||0)<=0;
+addEventListener("touchstart",e=>{if(document.querySelector(".scrim,.cmodal,.jmenu")||!haut()){y0=null;return}y0=e.touches[0].clientY;d=0},{passive:true});
+addEventListener("touchmove",e=>{if(y0==null)return;d=Math.max(0,e.touches[0].clientY-y0);if(d>8){f.style.setProperty("--d",Math.min(d,110)+"px");f.classList.add("on");f.classList.toggle("pret",d>=80)}},{passive:true});
+addEventListener("touchend",()=>{if(y0==null)return;const ok=d>=80;y0=null;if(ok){f.classList.add("tourne");setTimeout(()=>location.reload(),250)}else{f.classList.remove("on","pret")}},{passive:true});
+document.head.insertAdjacentHTML("beforeend",`<style>.tire{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);z-index:60;width:36px;height:36px;margin-left:-18px;border-radius:50%;background:#4E2E22;color:#FFF8F1;display:grid;place-items:center;font-size:18px;font-weight:800;opacity:0;transform:translateY(-50px) rotate(0deg);transition:transform .15s,opacity .15s;pointer-events:none;box-shadow:0 8px 18px -8px rgba(33,2,2,.6)}
+.tire.on{opacity:.9;transform:translateY(calc(var(--d,0px) - 40px)) rotate(calc(var(--d,0px) * 2deg))}.tire.pret{opacity:1;background:#6D1F2E}
+.tire.tourne{animation:tire-t .6s linear infinite}@keyframes tire-t{to{transform:translateY(70px) rotate(360deg)}}</style>`)})();setInterval(()=>{if(document.visibilityState==="visible")verifierMaj()},300000)</script>
 <script>
 (() => {
 const STATUTS = {
