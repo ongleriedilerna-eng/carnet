@@ -807,6 +807,13 @@ header.top.cettesem .cloche .pastille{border-color:#4E2E22}
 /* J4 : l'heure écrite sur le trait */
 .nowline span{position:absolute;right:1px;top:-15px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;line-height:13px;border-radius:6px;padding:0 4px;white-space:nowrap}
 .nowline.bas span{top:4px}
+/* Le samedi : de tout petits points caramel sur toute la colonne */
+.wcol.sam{background-image:radial-gradient(color-mix(in srgb,#B98A5A 55%,transparent) 1px,transparent 1.4px);background-size:7px 7px}
+/* Aujourd'hui : un carré caramel autour de « auj. » et du chiffre (à la place du rond marron) */
+.wday.today{background:#E9D3B4;border-radius:10px}
+.wday.today .n{background:none!important;color:var(--choco)!important;min-width:0;padding:0;border-radius:0}
+.wday.today .l{color:#7A4E26!important;font-weight:800}
+.wday.today .c{color:#7A4E26}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1122,7 +1129,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-224919";
+<script>window.__V="20261027-225815";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1333,7 +1340,7 @@ function renderSemaine(){
   h+=`</div>`;
   for(const i of IDX){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
-    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""} ${d===today?"ajd":""} ${jourFin(ws,i)?"fin":""} ${estComplet(d)?"complet":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
+    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""} ${d===today?"ajd":""} ${jourFin(ws,i)?"fin":""} ${estComplet(d)?"complet":""} ${i===5?"sam":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
     // J4 : un trait à l'heure qu'il est, dans la colonne d'aujourd'hui, avec l'heure écrite (redessiné chaque minute).
     // Toujours visible : avant l'ouverture il reste en haut, après la fermeture en bas.
     if(d===today){const y=Math.max(0,Math.min(N*SLOT-2,(nowM-A)/30*SLOT));h+=`<div class="nowline ${y<16?"bas":""}" style="top:${y}px" aria-hidden="true"><span class="num">${Math.floor(nowM/60)}h${pad(nowM%60)}</span></div>`}
