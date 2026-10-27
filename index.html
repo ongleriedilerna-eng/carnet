@@ -794,6 +794,16 @@ header.top.cettesem .mlabel small{opacity:.85}
 header.top.cettesem .iconbtn{color:#FFF8F1}
 header.top.cettesem .plusbtn{background:#FFF8F1;color:#4E2E22}
 header.top.cettesem .cloche .pastille{border-color:#4E2E22}
+/* Rendez-vous : prestations en pastilles, l'habituelle en grand */
+#lastBox{display:none!important}
+.prpills{display:flex;flex-direction:column;gap:8px}
+.prhab{display:flex;flex-direction:column;align-items:flex-start;width:100%;border:1.5px solid var(--choco);background:var(--surface);color:var(--choco);border-radius:16px;padding:10px 14px;font:800 17px var(--body);text-align:left}
+.prhab small{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--b2);margin-bottom:2px}
+.prhab.on{background:var(--choco);color:var(--bg)}.prhab.on small{color:var(--b1)}
+.prtiles{display:flex;flex-wrap:wrap;gap:6px}
+.prtiles button{border:1.5px solid var(--line);background:var(--surface);color:var(--choco);border-radius:999px;padding:8px 14px;font:700 14px var(--body);white-space:nowrap}
+.prtiles button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
+#paie .btn.fini{margin-top:12px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1109,7 +1119,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-224015";
+<script>window.__V="20261027-224304";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1725,12 +1735,12 @@ function openRdv(r, preset={}){
       <div class="quick" id="quick" aria-label="Raccourcis de semaines">${[["+1 sem",7],["+2 sem",14],["+3 sem",21],["+4 sem",28],["+6 sem",42]].map(([l,n])=>`<button type="button" data-plus="${n}">${l}<small>${fJM.format(parse(mondayOf(addDays(isNew?iso(new Date()):r.date,n))))}</small></button>`).join("")}</div>
       <div id="miniPl"></div>
       <div class="dhint" id="dHint"></div>
-      <div class="fld"><label for="rPrest">Prestation</label><select id="rPrest"><option value="">Choisir…</option>${prestOpts}</select></div>
+      <div class="fld"><label>Prestation</label><select id="rPrest" hidden><option value=""></option>${prestOpts}</select><div class="prpills" id="prPills"></div></div>
       <div class="fld" hidden><label>Options</label><div class="opts" id="opts">${optsHtml}</div></div>
+      <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
       <div class="total" id="totBox" role="button" aria-label="Changer le montant"><span><small>Total annoncé à la cliente · touche pour changer</small><b class="num" id="tot">0 €</b><small class="modif" id="totModif" hidden>montant changé à la main</small></span><span id="offTxt" style="font-size:13px;text-align:right"></span></div>
       <input type="hidden" id="rNote" value="${esc(r.note||"")}">
       ${isNew?"":`<div id="paie"></div>`}
-      <button class="btn" type="submit">${isNew?"Enregistrer le rendez-vous":"Enregistrer"}</button>
       ${isNew?"":`<button class="btn enfonce" type="button" id="btnDel">Supprimer ce rendez-vous</button>`}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
@@ -1741,7 +1751,12 @@ function openRdv(r, preset={}){
     function upd(){const b=build();
       // la date et l'heure écrites simplement : 26-10-2026 et 9h30
       $("#rDateTxt").textContent=b.date?b.date.split("-").reverse().join("-"):"—";$("#rHeureTxt").textContent=b.heure?b.heure.replace(/^0/,"").replace(":","h"):"—";
-      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;const fb=$("#btnFini");if(fb)fb.textContent=`✓ Fini · ${eur(totalRdv(b))} en espèces`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:""}
+      if(b.date){const autres=S.rdvs.filter(x=>x.id!==r.id&&x.date===b.date&&x.statut!=="annule");$("#dHint").innerHTML=`${cap(fDay.format(parse(b.date)))} · <b>${autres.length?autres.length+" autre"+(autres.length>1?"s":"")+" rdv ce jour-là ("+autres.map(x=>x.heure).sort().join(", ")+")":"journée libre"}</b>`}$("#tot").textContent=eur(totalRdv(b));$("#totModif").hidden=b.total==null;const fb=$("#btnFini");if(fb)fb.textContent=`✓ Fini · ${eur(totalRdv(b))} en espèces`;const off=offertRdv(b);$("#offTxt").innerHTML=off?`🎁 ${eur(off)} offerts`:"";dessinePr()}
+    // les prestations en pastilles ; celle qu'elle prend d'habitude en grand, en premier
+    function dessinePr(){const v=$("#rPrest").value,id=$("#rClient").value,l=id&&id!=="__new"?lastOf(id):null;
+      const hab=l?cat.prestations.findIndex(p=>p.nom===l.prestation.nom):-1;
+      $("#prPills").innerHTML=(hab>=0?`<button type="button" class="prhab ${v===String(hab)?"on":""}" data-pr="${hab}"><small>Comme d'habitude</small>${esc(cat.prestations[hab].nom)} · ${eur(cat.prestations[hab].prix)}</button>`:"")
+        +`<div class="prtiles">${cat.prestations.map((p,i)=>i===hab?"":`<button type="button" class="${v===String(i)?"on":""}" data-pr="${i}">${esc(p.nom)}</button>`).join("")}${v==="keep"?`<button type="button" class="on" data-pr="keep">${esc(r.prestation.nom)}</button>`:""}</div>`}
     const norm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     function lastOf(id){const t=iso(new Date());const l=S.rdvs.filter(x=>x.clientId===id&&x.id!==r.id&&x.statut!=="annule"&&x.prestation).sort((a,b)=>(b.date+b.heure).localeCompare(a.date+a.heure));return l.find(x=>x.date<=t)||l[0]}
     function applyLast(l){
@@ -1774,6 +1789,7 @@ function openRdv(r, preset={}){
     $("#btnNewCli").onclick=()=>newCli("");
     if(isNew&&r.clientId&&!r.prestation)setTimeout(()=>showLast(r.clientId),0);
     $("#backCli").onclick=()=>{$("#rClient").value="";$("#quickNew").hidden=true;$("#cliField").hidden=false;$("#rCliQ").value="";$("#rCliQ").focus()};
+    $("#prPills").onclick=e=>{const b=e.target.closest("[data-pr]");if(!b)return;const s=$("#rPrest");s.value=b.dataset.pr;s.dispatchEvent(new Event("change"))};
     $("#rPrest").onchange=()=>{const v=$("#rPrest").value;if(v!==""&&v!=="keep")$("#rDuree").value=cat.prestations[+v].duree||60;upd()};
     sheet.querySelectorAll("#opts input[type=checkbox]").forEach(cb=>cb.onchange=()=>{const o=state.opts[+cb.dataset.i];o.on=cb.checked;if(!cb.checked)o.offert=false;
       const g=sheet.querySelector(`[data-gift="${cb.dataset.i}"]`);g.disabled=!cb.checked;g.classList.toggle("on",!!o.offert);upd()});
@@ -1813,11 +1829,11 @@ function openRdv(r, preset={}){
     // « Rendez-vous fini » : un seul geste, encaissé en espèces, le rdv passe en « Fait » et le montant va dans le Bilan
     let doitOuvert=false;
     function dessinePaie(){const p=$("#paie");if(!p)return;
-      p.innerHTML=(r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
-        :`<button type="button" class="btn fini" id="btnFini">✓ Fini · ${eur(totalRdv(build()))} en espèces</button>`)
-        +`<div class="stpills">${[["lapin","Lapin"],["annule","Annulé"]].map(([k,l])=>`<button type="button" data-stp="${k}" class="${state.statut===k?"on":""}">${l}</button>`).join("")}<button type="button" id="doitP" class="${r.doit>0||doitOuvert?"on doit":""}">Elle me doit</button></div>`
+      const finiH=(r.paye?`<div class="paie"><span class="paye">Payé · ${esc(r.paye.mode)} · ${eur(r.paye.montant)}</span><button type="button" class="link" id="paieX">Annuler</button></div>`
+        :`<button type="button" class="btn fini" id="btnFini">✓ Fini · ${eur(totalRdv(build()))} en espèces</button>`);
+      p.innerHTML=`<div class="stpills">${[["lapin","Lapin"],["annule","Annulé"]].map(([k,l])=>`<button type="button" data-stp="${k}" class="${state.statut===k?"on":""}">${l}</button>`).join("")}<button type="button" id="doitP" class="${r.doit>0||doitOuvert?"on doit":""}">Elle me doit</button></div>`
         +(r.doit>0?`<div class="doitbox"><span>Elle me doit</span><b class="num">${eur(r.doit)}</b><button type="button" id="doitOk">Elle a payé ✓</button></div>`
-          :doitOuvert?`<div class="doitbox"><span>Elle me doit</span><input type="number" inputmode="decimal" id="doitIn" placeholder="20"> €<button type="button" id="doitSet">OK</button></div>`:"");
+          :doitOuvert?`<div class="doitbox"><span>Elle me doit</span><input type="number" inputmode="decimal" id="doitIn" placeholder="20"> €<button type="button" id="doitSet">OK</button></div>`:"")+finiH;
       async function finir(){const b=build(),montant=totalRdv(b),paye={mode:"Espèces",montant,le:iso(new Date())};
         if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait",total:b.total}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;state.statut="fait";closeSheet();render()}else dessinePaie()}
       // le rond se fait glisser jusqu'au bout ; lâché avant, il revient
