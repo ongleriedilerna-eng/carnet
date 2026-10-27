@@ -770,6 +770,10 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .nvgros{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:2px 0 10px;border:0;background:var(--choco);color:var(--bg);border-radius:18px;padding:15px 0;font-size:17px;font-weight:800}
 .nvgros span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--bg);color:var(--choco);font-size:20px;line-height:1}
 .bsug:not(:has(*)){display:none}
+/* Nouveau rdv : le total se touche pour le changer */
+.totbtn{cursor:pointer}
+.totbtn b i{font-style:normal;font-size:.7em;margin-left:6px;opacity:.55}
+.totbtn input{width:90px;font:inherit;font-size:20px;font-weight:800;border:1.5px solid var(--choco);border-radius:10px;padding:2px 8px;background:var(--surface);color:var(--choco)}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1085,7 +1089,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-221907";
+<script>window.__V="20261027-222300";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -2465,7 +2469,8 @@ function openBulle(date,heure,anchor,pre){
     // « Perso » : une pilule marron foncé, sous « Proposer ce créneau au club »
     if(!c&&!B.nouv&&!B.perso)h+=`<button type="button" class="persopil" data-b="perso" aria-label="Bloquer ce créneau pour moi">Perso</button>`;
     inn.innerHTML=h;
-    foot.innerHTML=`<span><small>Total · fin à ${fin()}</small><b class="num">${B.prest&&B.prest.prix==null?"Prix à fixer":eur(B.prest?.prix||0)}</b></span><button type="button" class="btn" data-b="save">Réserver</button>`;
+    // le total se change en le touchant (nail art en plus…) ; vide = on revient au prix de la prestation
+    foot.innerHTML=`<span class="totbtn" data-b="tot" role="button" aria-label="Changer le total"><small>Total · fin à ${fin()}</small><b class="num" id="bTot">${B.total!=null?eur(B.total):B.prest&&B.prest.prix==null?"Prix à fixer":eur(B.prest?.prix||0)}<i aria-hidden="true">✎</i></b></span><button type="button" class="btn" data-b="save">Réserver</button>`;
     place();
   }
   function pick(id){B.clientId=id;B.nouv=null;B.q="";B.habit=habitude(id);if(!B.manuel)B.prest=B.habit?{...B.habit.prestation,duree:B.habit.duree}:null;draw()}
@@ -2496,7 +2501,10 @@ function openBulle(date,heure,anchor,pre){
       const body={date,heure,duree:B.persoDur,perso:true,bloque:!!B.bloque,label:B.bloque?"Bloqué":"Pause déj",clientId:"",prestation:null,options:[],statut:"perso",note:B.bloque?(B.persoNote||"").trim():""};
       const ok=await write(()=>S.db.collection("rdv").doc().set(body),"Créneau bloqué");
       if(ok){closeSheet();render()}else b.disabled=false;return}
-    if(a==="prest"){const p=cat.prestations[+b.dataset.i];B.manuel=true;B.prest={nom:p.nom,prix:p.prix,duree:p.duree||60};draw();return}
+    if(a==="tot"){if(e.target.tagName==="INPUT")return;const t=$("#bTot");const v=B.total!=null?B.total:(B.prest?.prix??"");
+      t.innerHTML=`<input type="number" inputmode="decimal" id="bTotIn" value="${v}">`;const i=$("#bTotIn");i.focus();i.select();
+      const ok=()=>{const x=i.value.trim();B.total=x===""?null:Number(x);draw()};i.onblur=ok;i.onkeydown=k=>{if(k.key==="Enter"){k.preventDefault();i.blur()}};return}
+    if(a==="prest"){const p=cat.prestations[+b.dataset.i];B.manuel=true;B.total=null;B.prest={nom:p.nom,prix:p.prix,duree:p.duree||60};draw();return}
     if(a==="save"){
       if(!B.clientId&&!B.nouv){toast("Choisis d'abord la cliente");$("#bQ")?.focus();return}
       if(!B.prest){toast("Choisis une prestation");return}
@@ -2506,7 +2514,7 @@ function openBulle(date,heure,anchor,pre){
         const ref=S.db?S.db.collection("clientes").doc():null;if(!ref){toast("Pas connectée");b.disabled=false;return}
         if(!await write(()=>ref.set({prenom:p,nom:"",tel:B.nouv.tel.trim(),insta:"",statut:"nouvelle",notes:"",allergies:"",creeLe:iso(new Date())}))){b.disabled=false;return}
         clientId=ref.id}
-      const body={date,heure,duree:duree(),clientId,prestation:{nom:B.prest.nom,prix:B.prest.prix},options:[],statut:"prevu",note:"",confirme:false};
+      const body={date,heure,duree:duree(),clientId,prestation:{nom:B.prest.nom,prix:B.prest.prix},options:[],statut:"prevu",note:"",confirme:false};if(B.total!=null)body.total=B.total;
       const conflit=S.rdvs.find(x=>x.date===date&&x.statut!=="annule"&&mins(x.heure)<mins(heure)+body.duree&&mins(heure)<mins(x.heure)+(Number(x.duree)||60));
       const ok=await write(()=>S.db.collection("rdv").doc().set(body),conflit?"Réservé, mais ça chevauche "+nomC(S.clients.get(conflit.clientId)):"Réservé ✨");
       if(ok){closeSheet();render()}else b.disabled=false;
