@@ -1136,7 +1136,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-232023";
+<script>window.__V="20261027-233116";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1283,7 +1283,9 @@ function court(n){n=String(n||"");const m=n.match(/niveau\s*(\d)/i);if(m)return 
 function nomCourt(c){return c?nomInit(c).toUpperCase():"?"}
 function prestaCourte(r){return [court(r.prestation?.nom),...(r.options||[]).map(o=>court(o.nom))].filter(Boolean).join("+")}
 // toutes les clientes en clair, le perso en marron moyen, les créneaux bloqués en marron foncé
-const estPause=r=>!!r.perso&&!r.bloque&&(r.label||"Pause déj")==="Pause déj";
+const estPause=r=>!!r.perso&&!r.bloque&&["Pause déj","OFF"].includes(r.label||"OFF");
+// Durées d'un créneau OFF / bloqué : les quatre courantes, puis « Plus… » pour les longues
+const PERSO_DUR=[[60,"1 h"],[90,"1 h 30"],[120,"2 h"],[150,"2 h 30"]],PERSO_PLUS=[...PERSO_DUR,[180,"3 h"],[210,"3 h 30"],[240,"4 h"],[300,"5 h"],[360,"6 h"],[480,"8 h"]];
 function ton(r){const k=r.perso?(r.bloque?0:2):1;return "--tb:var(--b"+k+");--tf:var(--b"+k+"f)"}
 function occupation(day){return rdvsOf(day).filter(r=>r.statut!=="annule"&&r.statut!=="lapin").reduce((a,r)=>a+(Number(r.duree)||60),0)}
 
@@ -1363,7 +1365,7 @@ function renderSemaine(){
       const top=(s0-A)/30*SLOT, ht=Math.max(18,(e0-s0)/30*SLOT-2), c=S.clients.get(x.r.clientId);
       const w=100/x.cols,ini=false;
       h+=`<button class="wblk ${ini?"ini":""} ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+1}px;height:${ht}px;left:calc(${w*x.col}% + 1px);right:auto;width:calc(${w}% - 2px)" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}" aria-label="${esc(x.r.heure)} ${esc(nomC(c))} ${esc(x.r.prestation?.nom||"")}">
-        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span>${ini?`<span class="w ini">${x.r.perso?"":esc(initials(c))}</span>`:""}<span class="w${x.r.bloque&&x.r.note?" wnote":""}">${x.r.perso?(x.r.bloque&&x.r.note?esc(x.r.note):esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase()):esc((c?.prenom||"").trim()||nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}${x.r.doit>0?`<span class="du num">+${eur(x.r.doit)}</span>`:""}</button>`;
+        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span>${ini?`<span class="w ini">${x.r.perso?"":esc(initials(c))}</span>`:""}<span class="w${x.r.bloque&&x.r.note?" wnote":""}">${x.r.perso?(x.r.bloque&&x.r.note?esc(x.r.note):esc(estPause(x.r)?"OFF":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase()):esc((c?.prenom||"").trim()||nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}${x.r.doit>0?`<span class="du num">+${eur(x.r.doit)}</span>`:""}</button>`;
     }
     h+=`</div>`;
   }
@@ -1401,7 +1403,7 @@ function renderJour(){
     const top=(s0-H0*60)/30*DROW, ht=Math.max(28,(e0-s0)/30*DROW-3);
     const c=S.clients.get(x.r.clientId), w=100/x.cols;
     h+=`<button class="blk ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${ht<46?"short":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+2}px;height:${ht}px;left:${w*x.col}%;width:calc(${w}% - 2px);right:auto" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}">
-      <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))} – ${hhmm(x.e).replace(/^0/,"").replace(":","h")}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"Pause":x.r.bloque?(x.r.note||"Bloqué"):(x.r.label||"Perso")):esc(nomInit(c).toUpperCase())+(isAbo(c)?CTILT:"")}</span>${ht>=64&&!x.r.perso?`<span class="p">${esc([x.r.prestation?.nom,...(x.r.options||[]).map(o=>o.nom)].filter(Boolean).join(" + "))} · ${eur(totalRdv(x.r))}</span>`:""}</button>`;
+      <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))} – ${hhmm(x.e).replace(/^0/,"").replace(":","h")}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"OFF":x.r.bloque?(x.r.note||"Bloqué"):(x.r.label||"Perso")):esc(nomInit(c).toUpperCase())+(isAbo(c)?CTILT:"")}</span>${ht>=64&&!x.r.perso?`<span class="p">${esc([x.r.prestation?.nom,...(x.r.options||[]).map(o=>o.nom)].filter(Boolean).join(" + "))} · ${eur(totalRdv(x.r))}</span>`:""}</button>`;
   }
   h+=`</div>`;
   h+=`</div>`;
@@ -2458,15 +2460,19 @@ function recentes(){
 // Toucher un créneau perso : changer son nom ou sa durée, ou le libérer
 function openPerso(r){let dur=Number(r.duree)||60,bl=!!r.bloque;
   const fin=()=>hhmm(mins(r.heure)+dur).replace(/^0/,"").replace(":","h");
-  openSheet(`<div class="sheet-h"><span><h3 style="margin:0" id="pTitre">${bl?"Bloqué":esc(r.label||"Pause déj")}</h3><small style="color:var(--muted);font-size:12.5px">${cap(fDay.format(parse(r.date)))} · ${r.heure.replace(/^0/,"").replace(":","h")} – <span id="pFin">${fin()}</span></small></span></div>
-    <div class="label" style="margin:12px 0 6px">C'est pour quoi ?</div><div class="pmots" id="pType"><button type="button" class="${bl?"":"on"}" data-v="perso">Pause déj</button><button type="button" class="${bl?"on bl":""}" data-v="bloque">Bloqué</button></div>
-    <div class="label" style="margin:12px 0 6px">Durée</div><div class="tiles" id="pDur">${[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[120,"2 h"],[150,"2 h 30"],[180,"3 h"]].map(([m,l])=>`<button type="button" class="tile ${dur===m?"on":""}" data-m="${m}">${l}</button>`).join("")}</div>
+  openSheet(`<div class="sheet-h"><span><h3 style="margin:0" id="pTitre">${bl?"Bloqué":estPause(r)?"OFF":esc(r.label)}</h3><small style="color:var(--muted);font-size:12.5px">${cap(fDay.format(parse(r.date)))} · ${r.heure.replace(/^0/,"").replace(":","h")} – <span id="pFin">${fin()}</span></small></span></div>
+    <div class="label" style="margin:12px 0 6px">C'est pour quoi ?</div><div class="pmots" id="pType"><button type="button" class="${bl?"":"on"}" data-v="perso">OFF</button><button type="button" class="${bl?"on bl":""}" data-v="bloque">Bloqué</button></div>
+    <div class="label" style="margin:12px 0 6px">Durée</div><div class="tiles" id="pDur"></div>
     <input class="bnote" id="pNote2" placeholder="Note : pourquoi je bloque (facultatif)" value="${esc(r.note||"")}" autocomplete="off" style="margin-top:10px" ${bl?"":"hidden"}>
     <div class="actions" style="margin-top:14px"><button type="button" class="btn ghost" id="pDel">Libérer le créneau</button><button type="button" class="btn" id="pOk">Enregistrer</button></div>`,sh=>{
-    sh.querySelectorAll("#pDur [data-m]").forEach(b=>b.onclick=()=>{dur=+b.dataset.m;sh.querySelectorAll("#pDur [data-m]").forEach(x=>x.classList.toggle("on",x===b));sh.querySelector("#pFin").textContent=fin()});
+    let plus=dur>150;
+    const dessineDur=()=>{sh.querySelector("#pDur").innerHTML=(plus?PERSO_PLUS:PERSO_DUR).map(([m,l])=>`<button type="button" class="tile ${dur===m?"on":""}" data-m="${m}">${l}</button>`).join("")+(plus?"":`<button type="button" class="tile" id="pPlus">Plus…</button>`);
+      sh.querySelectorAll("#pDur [data-m]").forEach(b=>b.onclick=()=>{dur=+b.dataset.m;dessineDur();sh.querySelector("#pFin").textContent=fin()});
+      const pp=sh.querySelector("#pPlus");if(pp)pp.onclick=()=>{plus=true;dessineDur()}};
+    dessineDur();
     sh.querySelectorAll("#pType [data-v]").forEach(b=>b.onclick=()=>{bl=b.dataset.v==="bloque";sh.querySelectorAll("#pType [data-v]").forEach(x=>{const on=x.dataset.v===(bl?"bloque":"perso");x.classList.toggle("on",on);x.classList.toggle("bl",on&&bl)});
-      sh.querySelector("#pTitre").textContent=bl?"Bloqué":"Pause déj";sh.querySelector("#pNote2").hidden=!bl});
-    sh.querySelector("#pOk").onclick=async()=>{const body={bloque:bl,label:bl?"Bloqué":"Pause déj",note:bl?sh.querySelector("#pNote2").value.trim():"",duree:dur};Object.assign(r,body);if(await write(()=>S.db.doc("rdv/"+r.id).update(body),"Enregistré")){closeSheet();render()}};
+      sh.querySelector("#pTitre").textContent=bl?"Bloqué":"OFF";sh.querySelector("#pNote2").hidden=!bl});
+    sh.querySelector("#pOk").onclick=async()=>{const body={bloque:bl,label:bl?"Bloqué":"OFF",note:bl?sh.querySelector("#pNote2").value.trim():"",duree:dur};Object.assign(r,body);if(await write(()=>S.db.doc("rdv/"+r.id).update(body),"Enregistré")){closeSheet();render()}};
     sh.querySelector("#pDel").onclick=async()=>{if(await write(()=>S.db.doc("rdv/"+r.id).delete(),"Créneau libéré"))closeSheet()};
   })}
 // La cliente qu'on propose d'office : celle au salon en ce moment (rdv en cours ou fini depuis moins de 30 min),
@@ -2521,11 +2527,11 @@ function openBulle(date,heure,anchor,pre){
     let h=`<div class="when"><span class="whengros"><b class="num">${hh(heure)}</b><small>${cap(fDay.format(parse(date)))}${date<iso(new Date())?'<span class="passetag">Jour passé</span>':""}</small></span><span class="whenr">${B.perso?`<button type="button" class="pill" data-b="cliente">Une cliente</button>`:c||B.nouv?`<button type="button" class="pill" data-b="chg">Autre cliente</button>`:""}</span></div>`;
     if(B.perso){
       // Créneau perso : bloqué pour Marie, sans cliente ni prix
-      h+=`<div class="label">C'est pour quoi ?</div><div class="pmots"><button type="button" class="${B.bloque?"":"on"}" data-b="ptype" data-v="perso">Pause déj</button><button type="button" class="${B.bloque?"on bl":""}" data-b="ptype" data-v="bloque">Bloqué</button></div>
-        <div class="label">Durée</div><div class="tiles">${[[30,"30 min"],[60,"1 h"],[90,"1 h 30"],[120,"2 h"],[150,"2 h 30"],[180,"3 h"]].map(([m,l])=>`<button type="button" class="tile ${B.persoDur===m?"on":""}" data-b="pdur" data-m="${m}">${l}</button>`).join("")}</div>
+      h+=`<div class="label">C'est pour quoi ?</div><div class="pmots"><button type="button" class="${B.bloque?"":"on"}" data-b="ptype" data-v="perso">OFF</button><button type="button" class="${B.bloque?"on bl":""}" data-b="ptype" data-v="bloque">Bloqué</button></div>
+        <div class="label">Durée</div><div class="tiles">${(B.persoPlus||B.persoDur>150?PERSO_PLUS:PERSO_DUR).map(([m,l])=>`<button type="button" class="tile ${B.persoDur===m?"on":""}" data-b="pdur" data-m="${m}">${l}</button>`).join("")}${B.persoPlus||B.persoDur>150?"":`<button type="button" class="tile" data-b="pplus">Plus…</button>`}</div>
         ${B.bloque?`<input class="bnote" id="pNote" placeholder="Note : pourquoi je bloque (facultatif)" value="${esc(B.persoNote||"")}" autocomplete="off">`:""}`;
       inn.innerHTML=h;
-      foot.innerHTML=`<span><small>Bloqué</small><b class="num">${hh(heure)} – ${fin()}</b></span><button type="button" class="btn" data-b="psave">Bloquer</button>`;
+      foot.innerHTML=`<span><small>${B.bloque?"Bloqué":"OFF"}</small><b class="num">${hh(heure)} – ${fin()}</b></span><button type="button" class="btn" data-b="psave">${B.bloque?"Bloquer":"Mettre OFF"}</button>`;
       place();return;
     }
     if(c){const st=clientStats(c.id);
@@ -2574,11 +2580,12 @@ function openBulle(date,heure,anchor,pre){
     if(a==="perso"){B.perso=true;B.persoDur=B.persoDur||60;draw();return}
     if(a==="cliente"){B.perso=false;draw();return}
     if(a==="pdur"){B.persoDur=+b.dataset.m;draw();return}
+    if(a==="pplus"){B.persoPlus=true;draw();return}
     if(a==="bdur"){B.prest={...B.prest,duree:+b.dataset.m};B.manuel=true;draw();return}
     if(a==="ptype"){B.bloque=b.dataset.v==="bloque";draw();return}
     if(a==="psave"){if(b.disabled)return;b.disabled=true;
-      const body={date,heure,duree:B.persoDur,perso:true,bloque:!!B.bloque,label:B.bloque?"Bloqué":"Pause déj",clientId:"",prestation:null,options:[],statut:"perso",note:B.bloque?(B.persoNote||"").trim():""};
-      const ok=await write(()=>S.db.collection("rdv").doc().set(body),"Créneau bloqué");
+      const body={date,heure,duree:B.persoDur,perso:true,bloque:!!B.bloque,label:B.bloque?"Bloqué":"OFF",clientId:"",prestation:null,options:[],statut:"perso",note:B.bloque?(B.persoNote||"").trim():""};
+      const ok=await write(()=>S.db.collection("rdv").doc().set(body),B.bloque?"Créneau bloqué":"Créneau OFF");
       if(ok){closeSheet();render()}else b.disabled=false;return}
     if(a==="tot"){if(e.target.tagName==="INPUT")return;const t=$("#bTot");const v=B.total!=null?B.total:(B.prest?.prix??"");
       t.innerHTML=`<input type="number" inputmode="decimal" id="bTotIn" value="${v}">`;const i=$("#bTotIn");i.focus();i.select();
