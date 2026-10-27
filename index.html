@@ -1085,6 +1085,12 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
+<script>window.__V="20261027-221907";
+async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
+  const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
+  if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")verifierMaj()});
+addEventListener("pageshow",()=>setTimeout(verifierMaj,1500));setInterval(()=>{if(document.visibilityState==="visible")verifierMaj()},300000)</script>
 <script>
 (() => {
 const STATUTS = {
