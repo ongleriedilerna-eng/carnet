@@ -804,6 +804,9 @@ header.top.cettesem .cloche .pastille{border-color:#4E2E22}
 .prtiles button{border:1.5px solid var(--line);background:var(--surface);color:var(--choco);border-radius:999px;padding:8px 14px;font:700 14px var(--body);white-space:nowrap}
 .prtiles button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
 #paie .btn.fini{margin-top:12px}
+/* J4 : l'heure écrite sur le trait */
+.nowline span{position:absolute;right:1px;top:-15px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;line-height:13px;border-radius:6px;padding:0 4px;white-space:nowrap}
+.nowline.bas span{top:4px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1119,7 +1122,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-224304";
+<script>window.__V="20261027-224919";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1331,8 +1334,9 @@ function renderSemaine(){
   for(const i of IDX){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
     h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""} ${d===today?"ajd":""} ${jourFin(ws,i)?"fin":""} ${estComplet(d)?"complet":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
-    // J4 : un trait à l'heure qu'il est, dans la colonne d'aujourd'hui (l'agenda se redessine chaque minute, le trait descend tout seul)
-    if(d===today&&nowM>=A&&nowM<B)h+=`<div class="nowline" style="top:${(nowM-A)/30*SLOT}px" aria-hidden="true"></div>`;
+    // J4 : un trait à l'heure qu'il est, dans la colonne d'aujourd'hui, avec l'heure écrite (redessiné chaque minute).
+    // Toujours visible : avant l'ouverture il reste en haut, après la fermeture en bas.
+    if(d===today){const y=Math.max(0,Math.min(N*SLOT-2,(nowM-A)/30*SLOT));h+=`<div class="nowline ${y<16?"bas":""}" style="top:${y}px" aria-hidden="true"><span class="num">${Math.floor(nowM/60)}h${pad(nowM%60)}</span></div>`}
     for(let k=0;k<N;k++){const m=A+k*30,hm=hhmm(m);
       h+=`<button class="wcell ${k%2?"h":""} ${d===today&&ici(m)?"maintenant":""} ${!J.ferme&&J.pDe!=null&&m>=J.pDe&&m<J.pA?"lunch":""} ${!J.ferme&&(m<J.de||m>=J.a)?"hors":""}" style="top:${k*SLOT}px;height:${SLOT}px" data-act="cell" data-d="${d}" data-m="${m}" aria-label="${fDay.format(parse(d))} à ${hm.replace(":","h")}"></button>`}
     const ls=Math.max(J.pDe??0,A),le=Math.min(J.pA??0,B);if(!J.ferme&&le>ls)h+=`<div class="lunchtag" style="top:${(ls-A)/30*SLOT+(le-ls)/60*SLOT-6}px">pause</div>`;
