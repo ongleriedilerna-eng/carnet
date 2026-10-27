@@ -1,5 +1,5 @@
 // Garde le Carnet dans le téléphone pour qu'il s'ouvre même sans réseau au salon.
-const CACHE = "carnet-20261027-225815";
+const CACHE = "carnet-20261027-231635";
 const FICHIERS = ["./", "index.html", "manifest.webmanifest", "src/stockage-iphone.js", "src/essai-capacitor.js",
   "src/depart.js", "assets/logo/dilerna-logo.webp", "icones/icone-180.png", "icones/icone-192.png", "icones/icone-512.png"];
 

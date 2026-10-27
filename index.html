@@ -814,6 +814,8 @@ header.top.cettesem .cloche .pastille{border-color:#4E2E22}
 .wday.today .n{background:none!important;color:var(--choco)!important;min-width:0;padding:0;border-radius:0}
 .wday.today .l{color:#7A4E26!important;font-weight:800}
 .wday.today .c{color:#7A4E26}
+/* Créneau bloqué : on lit la note qu'on a mise, sur plusieurs lignes si besoin */
+.wblk .w.wnote{white-space:normal;overflow-wrap:normal;hyphens:auto;-webkit-hyphens:auto;font-size:10px;letter-spacing:-.03em;line-height:1.15;font-weight:700}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1129,7 +1131,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-225815";
+<script>window.__V="20261027-231635";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1252,7 +1254,7 @@ function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===S.tab||(b.dataset.tab==="agenda"&&S.tab==="jour")));
   const ad=document.getElementById("btnAdd");if(ad)ad.setAttribute("aria-label",S.tab==="clientes"?"Nouvelle cliente":"Nouveau rendez-vous");
   // l'agenda tient sur l'écran : rien ne bouge en haut et en bas
-  document.documentElement.classList.toggle("fige",S.tab==="agenda");document.documentElement.dataset.tab=S.tab;
+  document.documentElement.classList.toggle("fige",false); // l'agenda défile jusqu'à 21hdocument.documentElement.dataset.tab=S.tab;
   majCloche();
   if(S.tab==="agenda") V.innerHTML=renderSemaine();
   else if(S.tab==="jour"){subJour(S.day);V.innerHTML=renderJour()}
@@ -1281,8 +1283,8 @@ function ton(r){const k=r.perso?(r.bloque?0:2):1;return "--tb:var(--b"+k+");--tf
 function occupation(day){return rdvsOf(day).filter(r=>r.statut!=="annule"&&r.statut!=="lapin").reduce((a,r)=>a+(Number(r.duree)||60),0)}
 
 function isoWeek(ds){const d=parse(ds);d.setDate(d.getDate()+3-((d.getDay()+6)%7));const y=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-y)/864e5-3+((y.getDay()+6)%7))/7)}
-const WH0=8,WH1=19;let SLOT=24;
-function plage(){return [WH0*60,WH1*60]} // toute la journée d'un coup, 8h–19h
+const WH0=8,WH1=21;let SLOT=24;
+function plage(){return [WH0*60,WH1*60]} // 8h–21h : de 8h à 19h tient à l'écran, on descend pour le soir
 // Horaires jour par jour (0 = lundi … 6 = dimanche) et vacances, réglés dans « Ma grille & réglages »
 const JOURS_L=["Lun.","Mar.","Mer.","Jeu.","Ven.","Sam.","Dim."];
 function horaires(){const c=S.catalogue,h=c.horaires;if(Array.isArray(h)&&h.length===7)return h;
@@ -1356,7 +1358,7 @@ function renderSemaine(){
       const top=(s0-A)/30*SLOT, ht=Math.max(18,(e0-s0)/30*SLOT-2), c=S.clients.get(x.r.clientId);
       const w=100/x.cols,ini=false;
       h+=`<button class="wblk ${ini?"ini":""} ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+1}px;height:${ht}px;left:calc(${w*x.col}% + 1px);right:auto;width:calc(${w}% - 2px)" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}" aria-label="${esc(x.r.heure)} ${esc(nomC(c))} ${esc(x.r.prestation?.nom||"")}">
-        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span>${ini?`<span class="w ini">${x.r.perso?"":esc(initials(c))}</span>`:""}<span class="w">${x.r.perso?esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase():esc((c?.prenom||"").trim()||nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}${x.r.doit>0?`<span class="du num">+${eur(x.r.doit)}</span>`:""}</button>`;
+        <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))}</span>${ini?`<span class="w ini">${x.r.perso?"":esc(initials(c))}</span>`:""}<span class="w${x.r.bloque&&x.r.note?" wnote":""}">${x.r.perso?(x.r.bloque&&x.r.note?esc(x.r.note):esc(estPause(x.r)?"PAUSE":x.r.bloque?"BLOQUÉ":(x.r.label||"PERSO")).toUpperCase()):esc((c?.prenom||"").trim()||nomCourt(c))+(isAbo(c)?CTILT:"")}</span>${ht>=40&&!x.r.perso?`<span class="pr ${ht<70?"one":""}">${esc(prestaCourte(x.r))}</span>`:""}${x.r.doit>0?`<span class="du num">+${eur(x.r.doit)}</span>`:""}</button>`;
     }
     h+=`</div>`;
   }
@@ -1394,7 +1396,7 @@ function renderJour(){
     const top=(s0-H0*60)/30*DROW, ht=Math.max(28,(e0-s0)/30*DROW-3);
     const c=S.clients.get(x.r.clientId), w=100/x.cols;
     h+=`<button class="blk ${x.r.perso?"perso":""} ${estPause(x.r)?"pausedej":""} ${ht<46?"short":""} ${x.r.statut==="annule"||x.r.statut==="lapin"?"cancel":""} ${x.r.statut==="fait"?"done":""}" style="${ton(x.r)};top:${top+2}px;height:${ht}px;left:${w*x.col}%;width:calc(${w}% - 2px);right:auto" data-act="editRdv" data-id="${x.r.id}" data-s="${x.s}">
-      <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))} – ${hhmm(x.e).replace(/^0/,"").replace(":","h")}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"Pause":x.r.bloque?"Bloqué":(x.r.label||"Perso")):esc(nomInit(c).toUpperCase())+(isAbo(c)?CTILT:"")}</span>${ht>=64&&!x.r.perso?`<span class="p">${esc([x.r.prestation?.nom,...(x.r.options||[]).map(o=>o.nom)].filter(Boolean).join(" + "))} · ${eur(totalRdv(x.r))}</span>`:""}</button>`;
+      <span class="dropto num"></span><span class="t num">${esc(x.r.heure.replace(/^0/,"").replace(":","h"))} – ${hhmm(x.e).replace(/^0/,"").replace(":","h")}</span><span class="w">${x.r.perso?esc(estPause(x.r)?"Pause":x.r.bloque?(x.r.note||"Bloqué"):(x.r.label||"Perso")):esc(nomInit(c).toUpperCase())+(isAbo(c)?CTILT:"")}</span>${ht>=64&&!x.r.perso?`<span class="p">${esc([x.r.prestation?.nom,...(x.r.options||[]).map(o=>o.nom)].filter(Boolean).join(" + "))} · ${eur(totalRdv(x.r))}</span>`:""}</button>`;
   }
   h+=`</div>`;
   h+=`</div>`;
@@ -2677,10 +2679,12 @@ document.addEventListener("scroll",e=>{const s=e.target;if(!s||s.id!=="dscroll"|
 function fitWeek(){const g=document.getElementById("wbody"),nav=document.querySelector("nav.tabs");if(!g||!nav)return;
   const r=g.getBoundingClientRect(),k=r.height/g.offsetHeight||1;
   avail=(nav.getBoundingClientRect().top-r.top)/k-6;
-  const [A,B]=plage();const sl=Math.max(16,Math.min(64,Math.floor(avail/((B-A)/30))));
+  const [A,B]=plage();const sl=Math.max(16,Math.min(64,Math.floor(avail/((Math.min(B,19*60)-A)/30))));
   if(sl!==SLOT){SLOT=sl;render();return}
   // même taille pour tous les prénoms de la semaine ; si ça ne rentre toujours pas, on garde juste le prénom
-  const els=[...document.querySelectorAll(".wblk:not(.ini) .w")];let gf=13;
+  // la note d'un créneau bloqué : un peu plus petite si un mot ne rentre pas (jamais de mot coupé)
+  for(const el of document.querySelectorAll(".wblk .w.wnote")){let f=10;el.style.fontSize=f+"px";while(el.scrollWidth>el.clientWidth+1&&f>7.5){f-=.5;el.style.fontSize=f+"px"}}
+  const els=[...document.querySelectorAll(".wblk:not(.ini) .w:not(.wnote)")];let gf=13;
   for(const el of els){let f=13;el.style.fontSize=f+"px";while(el.scrollWidth>el.clientWidth+1&&f>9){f-=.5;el.style.fontSize=f+"px"}gf=Math.min(gf,f)}
   for(const el of els){let f=gf;el.style.fontSize=f+"px";el.style.whiteSpace="";
     while(el.scrollWidth>el.clientWidth+1&&f>8.5){f-=.5;el.style.fontSize=f+"px"}
