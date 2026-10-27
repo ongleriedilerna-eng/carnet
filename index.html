@@ -786,6 +786,14 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .jmenu{position:fixed;z-index:95;min-width:170px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:7px;box-shadow:0 18px 40px -12px rgba(33,2,2,.45)}
 .jmenu b{font-size:14px;color:var(--choco);white-space:nowrap}
 .jmenu button{border:0;border-radius:999px;background:var(--choco);color:var(--bg);font:800 13.5px var(--body);padding:10px 14px;white-space:nowrap}
+/* La barre du haut : marron, écrite en blanc, sur la semaine d'aujourd'hui */
+header.top.cettesem{background:#4E2E22;border-color:#4E2E22;box-shadow:0 10px 24px -12px rgba(33,2,2,.6)}
+header.top.cettesem .brand img{filter:brightness(0) invert(.96)}
+header.top.cettesem .mlabel b,header.top.cettesem .mlabel b .yr,header.top.cettesem .mlabel small,header.top.cettesem .mfleche{color:#FFF8F1}
+header.top.cettesem .mlabel small{opacity:.85}
+header.top.cettesem .iconbtn{color:#FFF8F1}
+header.top.cettesem .plusbtn{background:#FFF8F1;color:#4E2E22}
+header.top.cettesem .cloche .pastille{border-color:#4E2E22}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1101,7 +1109,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-223306";
+<script>window.__V="20261027-224015";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1231,6 +1239,7 @@ function render(){
   else if(S.tab==="bilan") V.innerHTML=renderBilan();
   else V.innerHTML=renderClientes();
   const hm=document.getElementById("hdMid");if(hm)hm.innerHTML=S.tab==="agenda"?S.moisBtn||"":"";
+  document.querySelector("header.top")?.classList.toggle("cettesem",S.tab==="agenda"&&mondayOf(S.day)===mondayOf(iso(new Date())));
   if(S.tab==="agenda"){centrerJours();requestAnimationFrame(fitWeek)}
   const qi=document.getElementById("q"); if(qi&&S._focusQ){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length)}
   // Dans le cadre iPhone (ordinateur), la colonne A → Z se pose sur l'écran, sinon elle défilerait avec la liste
@@ -2650,6 +2659,11 @@ function fitWeek(){const g=document.getElementById("wbody"),nav=document.querySe
     while(el.scrollWidth>el.clientWidth+1&&f>8.5){f-=.5;el.style.fontSize=f+"px"}
     if(el.scrollWidth>el.clientWidth+1){el.style.whiteSpace="normal";el.style.overflowWrap="anywhere"}}}
 addEventListener("resize",()=>{if(S.tab==="agenda")fitWeek()});
+// Retour sur l'appli après plus de 2 minutes : l'agenda revient sur aujourd'hui (sauf si une feuille est ouverte)
+let cacheeLe=0;
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){cacheeLe=Date.now();return}
+  if(!cacheeLe||Date.now()-cacheeLe<120000||document.querySelector(".scrim,.cmodal"))return;
+  const t=iso(new Date());if(S.tab==="agenda"&&S.day!==t){S.day=t;S.cal=t.slice(0,7);render()}});
 function weekStep(n){S.sel=null;demiPas(n>0?1:-1,n>0?"wanim-l":"wanim-r")}
 // A2 : on avance d'une semaine à la fois
 function demiDe(d){return 0}
