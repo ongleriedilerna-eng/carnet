@@ -781,6 +781,11 @@ a.igb{border:1.5px solid var(--choco);border-radius:999px;padding:5px 11px;font-
 .doitbox b{font-size:19px;color:#7A4E26}
 .doitbox input{width:70px;font:inherit;font-size:17px;font-weight:800;border:1.5px solid #C9A57E;border-radius:10px;padding:3px 8px;background:var(--surface);color:#7A4E26}
 .doitbox button{margin-left:auto;border:0;border-radius:999px;background:var(--choco);color:var(--bg);font-size:12.5px;font-weight:800;padding:8px 12px;white-space:nowrap}
+/* K1 : journée complète — les trous rayés, la petite bulle sous la date */
+.wcol.complet{background-image:repeating-linear-gradient(135deg,color-mix(in srgb,#8A6A55 24%,transparent) 0 4px,transparent 4px 9px)}
+.jmenu{position:fixed;z-index:95;min-width:170px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:7px;box-shadow:0 18px 40px -12px rgba(33,2,2,.45)}
+.jmenu b{font-size:14px;color:var(--choco);white-space:nowrap}
+.jmenu button{border:0;border-radius:999px;background:var(--choco);color:var(--bg);font:800 13.5px var(--body);padding:10px 14px;white-space:nowrap}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1096,12 +1101,14 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-222928";
+<script>window.__V="20261027-223306";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")verifierMaj()});
-addEventListener("pageshow",()=>setTimeout(verifierMaj,1500));setInterval(()=>{if(document.visibilityState==="visible")verifierMaj()},300000)</script>
+addEventListener("pageshow",()=>setTimeout(verifierMaj,1500));
+// toucher le logo en haut à gauche rafraîchit le Carnet (dans l'appli plein écran, on ne peut pas tirer la page vers le bas)
+addEventListener("DOMContentLoaded",()=>document.querySelector(".brand")?.addEventListener("click",()=>location.reload()));setInterval(()=>{if(document.visibilityState==="visible")verifierMaj()},300000)</script>
 <script>
 (() => {
 const STATUTS = {
@@ -1259,6 +1266,18 @@ const hTxt=v=>{const [h,m]=String(v||"").split(":");return +h+"h"+(m&&m!=="00"?m
 function jourSel(){return (parse(S.day).getDay()+6)%7}
 function jourFin(w0,i){return jourInfo(addDays(w0,i)).ferme}
 function colonnes(w0){return [0,1,2,3,4,5,6].map(i=>jourFin(w0,i)?"14px":"minmax(0,1fr)").join(" ")}
+// K1 : « Journée complète » — les trous du jour sont rayés ; on touche la date pour le mettre ou l'enlever
+function estComplet(d){return (S.catalogue.complets||[]).includes(d)}
+function menuJour(d){document.querySelector(".jmenu")?.remove();
+  const btn=document.querySelector(`.dweek [data-act="selDay"][data-d="${d}"]`);if(!btn||jourInfo(d).ferme)return;
+  const c=estComplet(d),m=document.createElement("div");m.className="jmenu";
+  m.innerHTML=`<b>${esc(cap(fDay.format(parse(d))))}</b><button type="button">${c?"Rouvrir la journée":"✓ Journée complète"}</button>`;
+  document.body.appendChild(m);const r=btn.getBoundingClientRect();
+  m.style.top=(r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(innerWidth-m.offsetWidth-8,r.left+r.width/2-m.offsetWidth/2))+"px";
+  m.querySelector("button").onclick=async()=>{const l=new Set(S.catalogue.complets||[]);c?l.delete(d):l.add(d);const v=[...l].sort(),body={...S.catalogue,complets:v};
+    if(await write(()=>S.db.doc("reglages/catalogue").set(body),c?"Journée rouverte":"Journée complète ✨")){S.catalogue=body;m.remove();render()}};
+  const ferme=e=>{if(!m.contains(e.target)){m.remove();document.removeEventListener("pointerdown",ferme,true)}};
+  setTimeout(()=>document.addEventListener("pointerdown",ferme,true),0)}
 function renderSemaine(){
   // A1 : toute la semaine sur une page, les jours de la même largeur ; le dimanche fermé en petite bande
   const today=iso(new Date()), ws=mondayOf(S.day), moi=0, IDX=[0,1,2,3,4,5,6], d0=addDays(ws,IDX[0]), we=addDays(ws,IDX[IDX.length-1]);
@@ -1283,7 +1302,7 @@ function renderSemaine(){
   h+=`<div class="wgrid" style="grid-template-columns:28px repeat(${IDX.length},minmax(0,1fr))"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
   for(let p=-PAGES;p<=PAGES;p++){const w0=addDays(ws,p*7),ix=IDX;h+=`<div class="dweek" style="grid-template-columns:${colonnes(w0)}">`;
   for(const i of ix){const d=addDays(w0,i),n=actifsDe(d).length,fin=jourFin(w0,i);
-    h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""} ${d<today?"passe":""} ${fin?"fin":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${d===today?"auj.":fin?JC[i].charAt(0).toUpperCase():JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${n&&!fin?n+" rdv":""}</span></button>`}
+    h+=`<button type="button" class="wday ${d===today?"today":""} ${d===S.day?"sel":""} ${d<today?"passe":""} ${fin?"fin":""}" data-act="selDay" data-d="${d}" aria-pressed="${d===S.day}" aria-label="${fDay.format(parse(d))}${n?", "+n+" rendez-vous":""}"><span class="l">${d===today?"auj.":fin?JC[i].charAt(0).toUpperCase():JC[i]}</span><span class="n num">${parse(d).getDate()}</span><span class="c">${estComplet(d)&&!fin?"complet":n&&!fin?n+" rdv":""}</span></button>`}
   h+=`</div>`}
   h+=`</div></div>`;
   const JW=jourInfo(addDays(ws,1));
@@ -1292,7 +1311,7 @@ function renderSemaine(){
   h+=`</div>`;
   for(const i of IDX){
     const d=addDays(ws,i), list=rdvsOf(d), J=jourInfo(d);
-    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""} ${d===today?"ajd":""} ${jourFin(ws,i)?"fin":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
+    h+=`<div class="wcol ${i>=5?"we":""} ${d===S.day?"sel":""} ${J.ferme?"fermee":""} ${d<today?"passee":""} ${d===today?"ajd":""} ${jourFin(ws,i)?"fin":""} ${estComplet(d)?"complet":""}" data-d="${d}">${J.ferme?`<div class="fermetag">${J.raison}</div>`:""}`;
     // J4 : un trait à l'heure qu'il est, dans la colonne d'aujourd'hui (l'agenda se redessine chaque minute, le trait descend tout seul)
     if(d===today&&nowM>=A&&nowM<B)h+=`<div class="nowline" style="top:${(nowM-A)/30*SLOT}px" aria-hidden="true"></div>`;
     for(let k=0;k<N;k++){const m=A+k*30,hm=hhmm(m);
@@ -2336,7 +2355,8 @@ function openReglages(){
       <button class="btn" type="submit">Enregistrer ma grille</button>
       ${window.__carnetSauvegarde?`<div class="label" style="margin-top:14px">Mes données</div>
       <button type="button" class="btn ghost" id="svgOut">Sauvegarder tout mon Carnet</button>
-      <button type="button" class="btn ghost" id="svgIn">Récupérer une sauvegarde</button>`:""}
+      <button type="button" class="btn ghost" id="svgIn">Récupérer une sauvegarde</button>
+      <button type="button" class="btn ghost" id="majOut">↻ Rafraîchir mon Carnet</button>`:""}
     </form>`, sheet=>{
     const $=s=>sheet.querySelector(s);
     function bind(){sheet.querySelectorAll(".catrow input").forEach(inp=>inp.oninput=()=>{const arr=inp.dataset.k==="p"?cat.prestations:cat.options;const v=inp.dataset.f==="nom"?inp.value:Number(inp.value)||0;arr[+inp.dataset.i][inp.dataset.f]=v});
@@ -2346,6 +2366,7 @@ function openReglages(){
     $("#goBilan").onclick=openBilan;
     $("#svgOut")?.addEventListener("click",()=>window.__carnetSauvegarde.exporter());
     $("#svgIn")?.addEventListener("click",()=>window.__carnetSauvegarde.importer());
+    $("#majOut")?.addEventListener("click",()=>location.reload());
     // Mes horaires : un jour par ligne, l'interrupteur ouvre ou ferme le jour, toucher la ligne change les heures
     const hor=structuredClone(horaires()),vac=structuredClone(S.catalogue.vacances||[]);let hEd=-1,vAj=false;
     const fJV=new Intl.DateTimeFormat("fr-FR",{day:"numeric",month:"short"});
@@ -2568,7 +2589,7 @@ document.addEventListener("click",e=>{
   if(a==="close"){closeSheet();return}
   if(a==="wstep"){weekStep(+t.dataset.n);return}
   if(a==="goWeek"){S.tab="agenda";render();document.getElementById("appscroll").scrollTop=0;window.scrollTo(0,0);return}
-  if(a==="selDay"){if(S.swiped)return;S.day=t.dataset.d;S.cal=S.day.slice(0,7);render();return}
+  if(a==="selDay"){if(S.swiped)return;S.day=t.dataset.d;S.cal=S.day.slice(0,7);render();menuJour(t.dataset.d);return}
   if(a==="openDay"){if(S.swiped)return;S.day=t.dataset.d;S.tab="jour";render();document.getElementById("appscroll").scrollTop=0;window.scrollTo(0,0);return}
   if(a==="cell"){if(S.swiped)return;openBulle(t.dataset.d,hhmm(+t.dataset.m),t);return}
   if(a==="half"){S.half=+t.dataset.h;SLOT=24;render();return}
