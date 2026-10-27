@@ -816,6 +816,11 @@ header.top.cettesem .cloche .pastille{border-color:#4E2E22}
 .wday.today .c{color:#7A4E26}
 /* Créneau bloqué : on lit la note qu'on a mise, sur plusieurs lignes si besoin */
 .wblk .w.wnote{white-space:normal;overflow-wrap:normal;hyphens:auto;-webkit-hyphens:auto;font-size:10px;letter-spacing:-.03em;line-height:1.15;font-weight:700}
+/* La pilule du bas, en petit et transparente pendant qu'on fait défiler */
+nav.tabs{transition:left .25s ease,right .25s ease,background-color .25s,opacity .25s,padding .25s}
+nav.tabs.mini{left:calc(50% - 84px);right:calc(50% - 84px);padding:3px;background:rgba(255,250,245,.32);opacity:.9}
+nav.tabs.mini button{font-size:0;gap:0;padding:6px 0}
+nav.tabs.mini button svg{width:17px;height:17px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1131,7 +1136,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-231635";
+<script>window.__V="20261027-232023";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -2695,6 +2700,13 @@ let cacheeLe=0;
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){cacheeLe=Date.now();return}
   if(!cacheeLe||Date.now()-cacheeLe<120000||document.querySelector(".scrim,.cmodal"))return;
   const t=iso(new Date());if(S.tab==="agenda"&&S.day!==t){S.day=t;S.cal=t.slice(0,7);render()}});
+// La pilule du bas (Agenda, Clientes, Bilan) se fait petite et plus transparente quand on fait défiler vers le bas,
+// et reprend sa taille quand on remonte ou qu'on revient en haut
+let navY=0;
+document.addEventListener("scroll",e=>{const t=e.target,sc=t===document||t===document.documentElement;
+  if(!sc&&!(t&&t.id==="appscroll"))return;const y=sc?scrollY:t.scrollTop,nav=document.querySelector("nav.tabs");if(!nav)return;
+  if(y<12)nav.classList.remove("mini");else if(y>navY+6)nav.classList.add("mini");else if(y<navY-6)nav.classList.remove("mini");
+  navY=y},true);
 function weekStep(n){S.sel=null;demiPas(n>0?1:-1,n>0?"wanim-l":"wanim-r")}
 // A2 : on avance d'une semaine à la fois
 function demiDe(d){return 0}
