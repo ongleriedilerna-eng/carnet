@@ -821,6 +821,38 @@ nav.tabs{transition:left .25s ease,right .25s ease,background-color .25s,opacity
 nav.tabs.mini{left:calc(50% - 84px);right:calc(50% - 84px);padding:3px;background:rgba(255,250,245,.32);opacity:.9}
 nav.tabs.mini button{font-size:0;gap:0;padding:6px 0}
 nav.tabs.mini button svg{width:17px;height:17px}
+/* I1 : le bandeau du jour */
+.bandeau{display:flex;gap:7px;align-items:stretch;margin:0 0 8px}
+.bandeau .prochaine{flex:1;min-width:0;border:0;text-align:left;background:var(--choco);color:var(--bg);border-radius:14px;padding:8px 12px;display:flex;flex-direction:column;line-height:1.2;font:inherit}
+.bandeau .prochaine small{font-size:10px;font-weight:800;opacity:.75;letter-spacing:.06em;text-transform:uppercase}
+.bandeau .prochaine b{font-size:14.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bandeau .prochaine em{font-style:normal;font-size:11.5px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bandeau .bjour{flex:none;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 11px;display:flex;flex-direction:column;justify-content:center;text-align:right;line-height:1.2}
+.bandeau .bjour b{font-size:15px;color:var(--choco)}.bandeau .bjour small{font-size:10px;color:var(--muted);font-weight:700;white-space:nowrap}
+.bandeau .btrou{flex:none;width:50px;border:1px solid var(--line);background:var(--surface);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--choco);font:800 9.5px var(--body)}
+.bandeau .btrou svg{width:18px;height:18px}
+/* I2 : la carte rapide */
+.cmodal.qc{align-items:start;padding-top:calc(150px + env(safe-area-inset-top,0px))}
+.qcard{background:var(--bg);border-radius:20px;padding:12px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;box-shadow:0 24px 50px -16px rgba(33,2,2,.6)}
+.qcard .ct{display:flex;align-items:center;gap:9px;min-width:0}.qcard .ct>span:last-child{min-width:0}
+.qcard .ct .av{flex:none;width:40px;height:40px;border-radius:50%;background:var(--choco);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:13px}
+.qcard .ct b{display:block;font-size:16.5px;color:var(--choco);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qcard .ct small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qcard .ct i.du{font-style:normal;font-weight:800;color:#7A4E26;background:#EBD9C0;border-radius:5px;padding:0 4px}
+.qcard .cb{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.qcard .ic{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 0;font:800 12px var(--body);color:var(--choco);text-decoration:none}
+.qcard .ic svg{width:18px;height:18px}.qcard .ic.off{opacity:.4}.qcard .ic.on{background:var(--b1);border-color:var(--b1)}
+.qcard .cl{display:flex;flex-wrap:wrap;gap:6px}
+.qcard .cl button{border:1.5px solid var(--line);border-radius:999px;padding:8px 12px;font:800 12.5px var(--body);color:var(--choco);background:var(--surface)}
+.qcard .cl .plein{flex:1;background:var(--choco);border-color:var(--choco);color:var(--bg)}
+/* I3 : un trou libre */
+.tdurs{display:flex;gap:6px;margin:12px 0 10px}
+.tdurs button{flex:1;border:1.5px solid var(--line);border-radius:999px;padding:9px 0;font:800 13px var(--body);color:var(--choco);background:var(--surface);white-space:nowrap}
+.tdurs button.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
+.trous{display:flex;flex-direction:column;gap:6px}
+.trou{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 11px;font-size:13.5px}
+.trou b{color:var(--choco);width:64px;white-space:nowrap}.trou span{flex:1;font-weight:600;white-space:nowrap}
+.trou button{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:800 12px var(--body);padding:7px 11px}
 .rondnote{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--choco);display:grid;place-items:center;padding:0}
 .rondnote svg{width:20px;height:20px}
 .rondnote.on{background:var(--choco);border-color:var(--choco);color:var(--bg)}
@@ -1136,7 +1168,7 @@ window.claude={use:n=>n==="db"?pret:Promise.resolve(null)}}</script>
 <script type="importmap">{"imports":{"@capacitor/core":"./src/essai-capacitor.js","@capacitor/filesystem":"./src/essai-capacitor.js"}}</script>
 <script type="module" src="src/stockage-iphone.js"></script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");navigator.storage?.persist?.()</script>
-<script>window.__V="20261027-234211";
+<script>window.__V="20261028-153317";
 async function verifierMaj(){try{if(document.querySelector(".scrim,.cmodal"))return;
   const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});const {v}=await r.json();
   if(v&&v!==window.__V){const d=+sessionStorage.getItem("carnet-maj")||0;if(Date.now()-d<30000)return;sessionStorage.setItem("carnet-maj",Date.now());location.reload()}}catch(e){}}
@@ -1325,6 +1357,52 @@ function menuJour(d){document.querySelector(".jmenu")?.remove();
     if(await write(()=>S.db.doc("reglages/catalogue").set(body),c?"Journée rouverte":"Journée complète ✨")){S.catalogue=body;m.remove();render()}};
   const ferme=e=>{if(!m.contains(e.target)){m.remove();document.removeEventListener("pointerdown",ferme,true)}};
   setTimeout(()=>document.addEventListener("pointerdown",ferme,true),0)}
+// I1 : le bandeau du jour, sous la barre du haut (prochaine cliente, nombre de rdv, ce que ça fait, l'heure où on finit)
+const TELSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>';
+const IGSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>';
+const LOUPE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+const hTxtM=m=>hhmm(m).replace(/^0/,"").replace(":","h");
+const durTxt=m=>{m=Number(m)||60;return m>=60?`${Math.floor(m/60)} h${m%60?" "+m%60:""}`:`${m} min`};
+function bandeauJour(nowM,today){
+  const l=rdvsOf(today).filter(r=>!r.perso&&r.statut!=="annule"&&r.statut!=="lapin"),tot=l.reduce((a,r)=>a+totalRdv(r),0);
+  const fin=l.length?Math.max(...l.map(r=>mins(r.heure)+(Number(r.duree)||60))):0;
+  const enc=l.find(r=>nowM>=mins(r.heure)&&nowM<mins(r.heure)+(Number(r.duree)||60)),proch=l.find(r=>mins(r.heure)>nowM),r=enc||proch,c=r&&S.clients.get(r.clientId);
+  let tag,g;
+  if(r){const d=mins(r.heure)-nowM;tag=enc?"En ce moment":d<60?`Dans ${d} min`:`Dans ${Math.floor(d/60)} h${d%60?" "+pad(d%60):""}`;
+    g=`<b>${esc(nomC(c))} · ${hTxtM(mins(r.heure))}</b><em>${esc(r.prestation?.nom||"")} · ${durTxt(r.duree)}</em>`}
+  else if(l.length){tag="Aujourd'hui";g=`<b>C'est fini pour aujourd'hui</b><em>Bonne soirée ✨</em>`}
+  else{tag="Aujourd'hui";g=`<b>Journée libre</b><em>Pas de rendez-vous</em>`}
+  return `<div class="bandeau"><button type="button" class="prochaine" ${r?`data-act="editRdv" data-id="${r.id}"`:""}><small>${tag}</small>${g}</button>
+    <span class="bjour"><b class="num">${l.length} rdv</b><small class="num">${l.length?eur(tot)+" · fini "+hTxtM(fin):"—"}</small></span>
+    <button type="button" class="btrou" data-act="trou" aria-label="Un trou libre ?">${LOUPE}<small>Trou ?</small></button></div>`}
+// I2 : la carte rapide — on touche un rendez-vous : appeler, message, fini, décaler, reprendre, ou ouvrir la feuille
+function carteRapide(r){const c=S.clients.get(r.clientId),tel=c?.tel?telIntl(c.tel):"",fini=!!r.paye||r.statut==="fait";
+  const d=document.createElement("div");d.className="cmodal qc";
+  d.innerHTML=`<div class="qcard"><div class="ct"><span class="av">${esc(initials(c))}</span><span><b>${nomHTML(c)}</b><small class="num">${esc(cap(fJS.format(parse(r.date))))} ${fJM.format(parse(r.date))} · ${hTxtM(mins(r.heure))} – ${hTxtM(mins(r.heure)+(Number(r.duree)||60))} · ${esc(r.prestation?.nom||"")} · ${eur(totalRdv(r))}${r.doit>0?` · <i class="du">+${eur(r.doit)}</i>`:""}</small></span></div>
+    <div class="cb">${tel?`<a class="ic" href="tel:${esc(tel)}">${TELSVG}Appeler</a>`:`<span class="ic off">${TELSVG}Pas de n°</span>`}${c?.insta?`<a class="ic" href="https://ig.me/m/${encodeURIComponent(instaNom(c.insta))}" target="_blank" rel="noopener">${IGSVG}Message</a>`:tel?`<a class="ic" href="sms:${esc(tel)}">${IGSVG}SMS</a>`:`<span class="ic off">${IGSVG}Message</span>`}<button type="button" class="ic ${fini?"on":""}" id="qFini">${fini?"✓ Payé":"✓ Fini"}</button></div>
+    <div class="cl"><button type="button" id="qDec">↷ Décaler</button><button type="button" id="qRep">Reprendre dans…</button><button type="button" class="plein" id="qOuv">Ouvrir le rendez-vous</button></div></div>`;
+  document.body.appendChild(d);const ferme=()=>d.remove();d.onclick=e=>{if(e.target===d)ferme()};
+  d.querySelector("#qOuv").onclick=()=>{ferme();openRdv(r)};
+  d.querySelector("#qDec").onclick=()=>{ferme();openRdv(r);setTimeout(()=>{const i=document.querySelector("#rDate");try{i.showPicker()}catch(_){i?.focus()}},350)};
+  d.querySelector("#qRep").onclick=()=>{ferme();openRdv(r);setTimeout(()=>document.querySelector("#quick")?.scrollIntoView({block:"center",behavior:"smooth"}),350)};
+  d.querySelector("#qFini").onclick=async()=>{if(fini)return;const montant=totalRdv(r),paye={mode:"Espèces",montant,le:iso(new Date())};
+    if(await write(()=>S.db.doc("rdv/"+r.id).update({paye,statut:"fait"}),`Encaissé · ${eur(montant)} ✨`)){r.paye=paye;r.statut="fait";ferme();render()}}}
+// I3 : « Un trou libre pour… » — les créneaux libres des deux prochaines semaines, pour un gel (1 h), un gel X (1 h 30) ou 2 h
+function openTrou(){let dur=60,sh;const DURS=[[60,"Gel · 1 h"],[90,"Gel X · 1 h 30"],[120,"2 h"]];
+  const libres=()=>{const out=[],today=iso(new Date()),n=new Date(),nowM=n.getHours()*60+n.getMinutes();
+    for(let k=0;k<14&&out.length<10;k++){const d=addDays(today,k),J=jourInfo(d);if(J.ferme||estComplet(d))continue;
+      const occ=rdvsOf(d).filter(r=>r.statut!=="annule"&&r.statut!=="lapin").map(r=>[mins(r.heure),mins(r.heure)+(Number(r.duree)||60)]);
+      if(J.pDe!=null)occ.push([J.pDe,J.pA]);
+      for(let m=J.de;m+dur<=J.a&&out.length<10;m+=30){if(d===today&&m<nowM)continue;if(occ.some(([s,e])=>m<e&&s<m+dur))continue;out.push({d,m});m+=dur-30}}
+    return out};
+  const dessine=()=>{const l=libres();
+    sh.querySelector("#tDurs").innerHTML=DURS.map(([m,t])=>`<button type="button" class="${dur===m?"on":""}" data-m="${m}">${t}</button>`).join("");
+    sh.querySelector("#tList").innerHTML=l.length?l.map(x=>`<div class="trou"><b>${esc(cap(fJS.format(parse(x.d))))} ${fJM.format(parse(x.d))}</b><span class="num">${hTxtM(x.m)} – ${hTxtM(x.m+dur)}</span><button type="button" data-d="${x.d}" data-m="${x.m}">Réserver</button></div>`).join("")
+      :`<div class="empty"><b>Rien de libre</b>Pas de trou de cette durée dans les deux prochaines semaines.</div>`;
+    sh.querySelectorAll("#tDurs [data-m]").forEach(b=>b.onclick=()=>{dur=+b.dataset.m;dessine()});
+    sh.querySelectorAll("#tList [data-d]").forEach(b=>b.onclick=()=>{const p=dur===60?"Gel":dur===90?"Gel X":"",pr=p?S.catalogue.prestations.find(x=>x.nom===p):null;
+      closeSheet();openRdv(null,{date:b.dataset.d,heure:hhmm(+b.dataset.m),duree:dur,prestation:pr?{nom:pr.nom,prix:pr.prix}:null})})};
+  openSheet(`<div class="sheet-h"><h3>Un trou libre pour…</h3></div><div class="tdurs" id="tDurs"></div><div class="trous" id="tList"></div>`,s=>{sh=s;dessine()})}
 function renderSemaine(){
   // A1 : toute la semaine sur une page, les jours de la même largeur ; le dimanche fermé en petite bande
   const today=iso(new Date()), ws=mondayOf(S.day), moi=0, IDX=[0,1,2,3,4,5,6], d0=addDays(ws,IDX[0]), we=addDays(ws,IDX[IDX.length-1]);
@@ -1344,6 +1422,7 @@ function renderSemaine(){
   // anniversaires du jour et rappels de demain : rangés dans la clochette « À faire » en haut à droite
   const nowD=new Date(),nowM=nowD.getHours()*60+nowD.getMinutes(),ici=t=>nowM>=t&&nowM<t+30; // la demi-heure où on est
   h+=`<div class="wview" id="wview"><div class="${S.wanim||""}">`;
+  h+=bandeauJour(nowM,today);
   // bande des jours : on la fait glisser au doigt pour voir les semaines d'avant et d'après (8 de chaque côté)
   const PAGES=8;
   h+=`<div class="wgrid" style="grid-template-columns:28px repeat(${IDX.length},minmax(0,1fr))"><div></div><div class="dscroll" id="dscroll" data-pages="${PAGES}" aria-label="Jours, fais glisser pour changer de semaine">`;
@@ -2664,7 +2743,8 @@ document.addEventListener("click",e=>{
   if(a==="tck"){const it=S.jour[t.dataset.k][+t.dataset.i];if(it){it.fait=!it.fait;saveJour()}}
   if(a==="trm"){S.jour[t.dataset.k].splice(+t.dataset.i,1);saveJour()}
   if(a==="newAt")openBulle(S.day,t.dataset.h,t);
-  if(a==="editRdv"){if(S.swiped)return;const r=S.rdvs.find(x=>x.id===t.dataset.id);if(r)r.perso?openPerso(r):openRdv(r)}
+  if(a==="editRdv"){if(S.swiped)return;const r=S.rdvs.find(x=>x.id===t.dataset.id);if(r)r.perso?openPerso(r):carteRapide(r)}
+  if(a==="trou"){openTrou();return}
   if(a==="fiche")openFiche(t.dataset.id);
   if(a==="telMenu"){const m=document.getElementById("telActs");if(m){m.hidden=!m.hidden;t.setAttribute("aria-expanded",String(!m.hidden))}}
   if(a==="copyTel"){const v=t.dataset.v;navigator.clipboard?.writeText(v).then(()=>toast("Numéro copié"),()=>toast("Numéro : "+v))??toast("Numéro : "+v)}
